@@ -1,0 +1,43 @@
+{
+  "name": "gitscope",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint:imports": "node scripts/check-imports.ts",
+    "diff:quick": "tsx harness/diff/run.ts --exhaustive 2",
+    "diff:valid": "tsx harness/diff/run.ts --valid --exhaustive 3",
+    "diff:random": "tsx harness/diff/run.ts --random 5000 --seed 42",
+    "diff:invalid": "tsx harness/diff/run.ts --invalid",
+    "diff:deep": "tsx harness/diff/run.ts --valid --exhaustive 4",
+    "bench": "tsx harness/bench/layout.ts",
+    "bench:browser": "tsx harness/bench/browser.ts",
+    "bench:browser:smoke": "tsx harness/bench/browser.ts --smoke",
+    "report": "tsx harness/writeReport.ts",
+    "report:full": "tsx harness/writeReport.ts --full"
+  },
+  "dependencies": {
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^26.5.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.0"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
+  }
+}
