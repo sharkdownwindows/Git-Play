@@ -1,0 +1,84 @@
+name: Nightly verification
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verification:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: Install and verify Git 2.43
+        run: |
+          sudo apt-get update
+          git_pkg=$(apt-cache madison git | awk '$3 ~ /^1:2\.43\./ { print $3; exit }')
+          test -n "$git_pkg"
+          sudo apt-get install -y --allow-downgrades "git=$git_pkg" "git-man=$git_pkg"
+          /usr/bin/git --version | grep -Eq '^git version 2\.43\.'
+          echo /usr/bin >> "$GITHUB_PATH"
+      - name: Install headless Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v2
+        with:
+          chrome-version: stable
+          install-dependencies: true
+      - name: Verify Chrome executable
+        env:
+          GITSCOPE_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          test -n "$GITSCOPE_BROWSER"
+          test -f "$GITSCOPE_BROWSER"
+          test -x "$GITSCOPE_BROWSER"
+          "$GITSCOPE_BROWSER" --version
+      - name: Measure production browser render and animation
+        env:
+          GITSCOPE_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: npm run bench:browser -- --production
+      - name: Full differential, invalid gate and layout benchmark
+        run: |
+          git --version | grep -Eq '^git version 2\.43\.'
+          npm run report:full
+      - name: Upload measured report
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification
+          path: |
+            public/verification.json
+            docs/divergences.md
+            harness/bench/browser-results.json
+          if-no-files-found: warn
+
+  publish:
+    needs: verification
+    if: needs.verification.result == 'success' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: verification
+          path: .
+      - name: Commit report after successful gates
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/verification.json docs/divergences.md
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: update verification report [skip ci]"
+            git push
+          fi
