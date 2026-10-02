@@ -1,0 +1,17 @@
+{
+  "id": "06-fast-forward",
+  "order": 6,
+  "title": "Fast-forward merge",
+  "goal": "Move main to the feature tip without creating a merge commit.",
+  "initial": {
+    "parents": { "root": [], "featureTip": ["root"] },
+    "branches": { "main": "root", "feature": "featureTip" },
+    "head": { "detached": false, "ref": "main", "commit": null }
+  },
+  "target": {
+    "parents": { "root": [], "featureTip": ["root"] },
+    "branches": { "main": "featureTip", "feature": "featureTip" },
+    "head": { "detached": false, "ref": "main", "commit": null }
+  },
+  "allowed": ["merge"]
+}

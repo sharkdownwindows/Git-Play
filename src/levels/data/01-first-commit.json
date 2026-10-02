@@ -1,0 +1,17 @@
+{
+  "id": "01-first-commit",
+  "order": 1,
+  "title": "First commit",
+  "goal": "Create the first commit on main.",
+  "initial": {
+    "parents": {},
+    "branches": {},
+    "head": { "detached": false, "ref": "main", "commit": null }
+  },
+  "target": {
+    "parents": { "root": [] },
+    "branches": { "main": "root" },
+    "head": { "detached": false, "ref": "main", "commit": null }
+  },
+  "allowed": ["commit"]
+}

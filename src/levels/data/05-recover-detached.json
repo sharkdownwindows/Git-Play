@@ -1,0 +1,17 @@
+{
+  "id": "05-recover-detached",
+  "order": 5,
+  "title": "Recover from detached HEAD",
+  "goal": "Attach HEAD to main again without moving main or changing the commits.",
+  "initial": {
+    "parents": { "first": [], "second": ["first"] },
+    "branches": { "main": "second" },
+    "head": { "detached": true, "ref": null, "commit": "first" }
+  },
+  "target": {
+    "parents": { "first": [], "second": ["first"] },
+    "branches": { "main": "second" },
+    "head": { "detached": false, "ref": "main", "commit": null }
+  },
+  "allowed": ["switch", "checkout"]
+}

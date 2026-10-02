@@ -1,0 +1,17 @@
+{
+  "id": "04-detached-head",
+  "order": 4,
+  "title": "Detached HEAD",
+  "goal": "Detach HEAD at the first commit while main stays at the second commit.",
+  "initial": {
+    "parents": { "first": [], "second": ["first"] },
+    "branches": { "main": "second" },
+    "head": { "detached": false, "ref": "main", "commit": null }
+  },
+  "target": {
+    "parents": { "first": [], "second": ["first"] },
+    "branches": { "main": "second" },
+    "head": { "detached": true, "ref": null, "commit": "first" }
+  },
+  "allowed": ["checkout", "switch"]
+}

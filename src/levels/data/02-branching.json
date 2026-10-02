@@ -1,0 +1,17 @@
+{
+  "id": "02-branching",
+  "order": 2,
+  "title": "Create a branch",
+  "goal": "Create feature at the current commit and leave HEAD on main.",
+  "initial": {
+    "parents": { "root": [] },
+    "branches": { "main": "root" },
+    "head": { "detached": false, "ref": "main", "commit": null }
+  },
+  "target": {
+    "parents": { "root": [] },
+    "branches": { "main": "root", "feature": "root" },
+    "head": { "detached": false, "ref": "main", "commit": null }
+  },
+  "allowed": ["branch", "switch"]
+}

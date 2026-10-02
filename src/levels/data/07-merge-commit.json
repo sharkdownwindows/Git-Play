@@ -1,0 +1,17 @@
+{
+  "id": "07-merge-commit",
+  "order": 7,
+  "title": "Merge two branches",
+  "goal": "Merge feature into main and create a commit with main and feature as its two parents.",
+  "initial": {
+    "parents": { "root": [], "mainTip": ["root"], "featureTip": ["root"] },
+    "branches": { "main": "mainTip", "feature": "featureTip" },
+    "head": { "detached": false, "ref": "main", "commit": null }
+  },
+  "target": {
+    "parents": { "root": [], "mainTip": ["root"], "featureTip": ["root"], "merge": ["mainTip", "featureTip"] },
+    "branches": { "main": "merge", "feature": "featureTip" },
+    "head": { "detached": false, "ref": "main", "commit": null }
+  },
+  "allowed": ["merge"]
+}

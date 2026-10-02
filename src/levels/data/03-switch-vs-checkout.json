@@ -1,0 +1,17 @@
+{
+  "id": "03-switch-vs-checkout",
+  "order": 3,
+  "title": "Switch or checkout",
+  "goal": "Attach HEAD to feature without moving either branch.",
+  "initial": {
+    "parents": { "root": [] },
+    "branches": { "main": "root", "feature": "root" },
+    "head": { "detached": false, "ref": "main", "commit": null }
+  },
+  "target": {
+    "parents": { "root": [] },
+    "branches": { "main": "root", "feature": "root" },
+    "head": { "detached": false, "ref": "feature", "commit": null }
+  },
+  "allowed": ["switch", "checkout"]
+}

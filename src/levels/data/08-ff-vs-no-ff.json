@@ -1,0 +1,17 @@
+{
+  "id": "08-ff-vs-no-ff",
+  "order": 8,
+  "title": "When fast-forward is impossible",
+  "goal": "Commit on main first, then merge feature. Divergent tips require a two-parent merge commit; no --no-ff flag is needed.",
+  "initial": {
+    "parents": { "root": [], "featureTip": ["root"] },
+    "branches": { "main": "root", "feature": "featureTip" },
+    "head": { "detached": false, "ref": "main", "commit": null }
+  },
+  "target": {
+    "parents": { "root": [], "featureTip": ["root"], "mainTip": ["root"], "merge": ["mainTip", "featureTip"] },
+    "branches": { "main": "merge", "feature": "featureTip" },
+    "head": { "detached": false, "ref": "main", "commit": null }
+  },
+  "allowed": ["commit", "merge"]
+}
