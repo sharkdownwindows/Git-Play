@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-labelledby="title desc">
+  <title id="title">Task completion rate</title>
+  <desc id="desc">Empty-state chart. raw-results.csv contains no participant rows, so task completion rates are unavailable.</desc>
+  <rect width="960" height="540" fill="#ffffff"/>
+  <text x="72" y="58" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#172033">Task completion rate</text>
+  <text x="72" y="88" font-family="Arial, sans-serif" font-size="15" fill="#5f6b7a">Source: raw-results.csv · participant rows: 0</text>
+  <line x1="250" y1="130" x2="250" y2="430" stroke="#aeb7c2" stroke-width="1"/>
+  <line x1="250" y1="430" x2="888" y2="430" stroke="#aeb7c2" stroke-width="1"/>
+  <text x="226" y="195" font-family="Arial, sans-serif" font-size="15" text-anchor="end" fill="#374151">Task A · Levels 01–03</text>
+  <text x="226" y="285" font-family="Arial, sans-serif" font-size="15" text-anchor="end" fill="#374151">Task B · Levels 04–05</text>
+  <text x="226" y="375" font-family="Arial, sans-serif" font-size="15" text-anchor="end" fill="#374151">Task C · Levels 06–08</text>
+  <text x="250" y="456" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#5f6b7a">0%</text>
+  <text x="569" y="456" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#5f6b7a">50%</text>
+  <text x="888" y="456" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#5f6b7a">100%</text>
+  <line x1="569" y1="130" x2="569" y2="430" stroke="#e5e9ef" stroke-width="1"/>
+  <line x1="888" y1="130" x2="888" y2="430" stroke="#e5e9ef" stroke-width="1"/>
+  <text x="569" y="198" font-family="Arial, sans-serif" font-size="16" font-weight="700" text-anchor="middle" fill="#6b7280">N/A</text>
+  <text x="569" y="288" font-family="Arial, sans-serif" font-size="16" font-weight="700" text-anchor="middle" fill="#6b7280">N/A</text>
+  <text x="569" y="378" font-family="Arial, sans-serif" font-size="16" font-weight="700" text-anchor="middle" fill="#6b7280">N/A</text>
+  <text x="569" y="492" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#5f6b7a">No bars are drawn because the denominator is zero.</text>
+</svg>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-labelledby="title desc">
+  <title id="title">Pre/post score by participant</title>
+  <desc id="desc">Empty-state chart. raw-results.csv contains no participant rows, so no pre/post scores are plotted.</desc>
+  <rect width="960" height="540" fill="#ffffff"/>
+  <text x="72" y="58" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#172033">Pre/post score by participant</text>
+  <text x="72" y="88" font-family="Arial, sans-serif" font-size="15" fill="#5f6b7a">Source: raw-results.csv · participant rows: 0</text>
+  <line x1="112" y1="124" x2="112" y2="430" stroke="#aeb7c2" stroke-width="1"/>
+  <line x1="112" y1="430" x2="888" y2="430" stroke="#aeb7c2" stroke-width="1"/>
+  <text x="92" y="436" font-family="Arial, sans-serif" font-size="13" text-anchor="end" fill="#5f6b7a">0</text>
+  <text x="92" y="334" font-family="Arial, sans-serif" font-size="13" text-anchor="end" fill="#5f6b7a">2</text>
+  <text x="92" y="232" font-family="Arial, sans-serif" font-size="13" text-anchor="end" fill="#5f6b7a">4</text>
+  <text x="92" y="130" font-family="Arial, sans-serif" font-size="13" text-anchor="end" fill="#5f6b7a">6</text>
+  <line x1="112" y1="328" x2="888" y2="328" stroke="#e5e9ef" stroke-width="1"/>
+  <line x1="112" y1="226" x2="888" y2="226" stroke="#e5e9ef" stroke-width="1"/>
+  <line x1="112" y1="124" x2="888" y2="124" stroke="#e5e9ef" stroke-width="1"/>
+  <rect x="292" y="208" width="376" height="116" rx="8" fill="#f5f7fa" stroke="#c9d1db"/>
+  <text x="480" y="252" font-family="Arial, sans-serif" font-size="20" font-weight="700" text-anchor="middle" fill="#374151">No participant data available</text>
+  <text x="480" y="282" font-family="Arial, sans-serif" font-size="15" text-anchor="middle" fill="#5f6b7a">No points are plotted; missing observations are not treated as zero.</text>
+  <text x="500" y="486" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#5f6b7a">Participant</text>
+  <text x="34" y="278" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#5f6b7a" transform="rotate(-90 34 278)">Quiz score (0–6)</text>
+</svg>
