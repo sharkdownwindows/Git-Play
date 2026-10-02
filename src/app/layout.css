@@ -227,15 +227,25 @@ button:disabled {
 }
 
 .app-wordmark {
+  appearance: none;
   height: 48px;
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: white;
   font-size: 15px;
   font-weight: 650;
   letter-spacing: -.01em;
   line-height: 1;
+  cursor: pointer;
+}
+
+.app-wordmark:focus-visible {
+  outline: 2px solid white;
+  outline-offset: -4px;
 }
 
 .app-wordmark__dot {
