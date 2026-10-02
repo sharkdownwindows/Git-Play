@@ -73,10 +73,15 @@ export function App() {
 
         <header className="app-header">
           <div className="app-header__inner">
-            <div className="app-wordmark" aria-label="GitPlay">
+            <button
+              type="button"
+              className="app-wordmark"
+              aria-label="Reload GitPlay"
+              onClick={() => window.location.reload()}
+            >
               <span aria-hidden="true">GitPlay</span>
               <span className="app-wordmark__dot" aria-hidden="true" />
-            </div>
+            </button>
 
             <nav className="app-nav" aria-label="Primary navigation">
               <div className="app-tablist" role="tablist" aria-orientation="horizontal">
@@ -119,21 +124,30 @@ export function App() {
           className={`app-main app-main--${active === "verification" ? "document" : "workspace"}`}
         >
           <div
-            id={`${current.id}-panel`}
+            id="practice-panel"
             role="tabpanel"
-            aria-labelledby={`${current.id}-tab`}
+            aria-labelledby="practice-tab"
             className="app-panel"
+            hidden={active !== "practice"}
           >
-            {current.id === "practice" ? (
-              <Practice />
-            ) : current.id === "verification" ? (
-              <VerificationTab />
-            ) : current.id === "reference" ? (
-              <CommandRefPanel />
-            ) : (
-              <Levels />
-            )}
+            <Practice />
           </div>
+          {current.id !== "practice" && (
+            <div
+              id={`${current.id}-panel`}
+              role="tabpanel"
+              aria-labelledby={`${current.id}-tab`}
+              className="app-panel"
+            >
+              {current.id === "verification" ? (
+                <VerificationTab />
+              ) : current.id === "reference" ? (
+                <CommandRefPanel />
+              ) : (
+                <Levels />
+              )}
+            </div>
+          )}
         </main>
       </div>
     </>

@@ -20,7 +20,7 @@ describe("App shell navigation", () => {
     expect(html).toContain('href="#terminal-input"');
     expect(html).toContain('role="dialog"');
     expect(html).toContain('class="app-shell" inert=""');
-    expect(html).toContain('class="app-wordmark" aria-label="GitPlay"');
+    expect(html).toContain('class="app-wordmark" aria-label="Reload GitPlay"');
     expect(html).not.toContain('aria-label="GitScope"');
     expect(html).toContain('data-intro-destination="practice"');
     expect(html).toContain('data-intro-destination="levels"');

@@ -2,6 +2,8 @@ import { merge } from "./merge";
 import type { LevelRecord, ProgressSet } from "./types";
 
 const STORAGE_KEY = "gitscope.progress.v1";
+const DEV_STORAGE_KEY = "gitscope.progress.dev.v1";
+const DEV_SESSION_KEY = "gitscope.dev-session.v1";
 
 type Listener = (progress: ProgressSet) => void;
 
@@ -14,7 +16,12 @@ class ProgressStore {
 
   /** Đọc localStorage. Hỏng hoặc không có → tập rỗng, không bao giờ throw. */
   async load(): Promise<void> {
-    this.progress = readStorage();
+    if (import.meta.env.DEV) {
+      prepareDevSession();
+      this.progress = readStorage(DEV_STORAGE_KEY);
+    } else {
+      this.progress = readStorage(STORAGE_KEY);
+    }
     this.emit();
   }
 
@@ -29,7 +36,7 @@ class ProgressStore {
   /** Ghi nhận hoàn thành level. Giữ lần giải tốt hơn nếu đã có. */
   complete(record: LevelRecord): void {
     this.progress = merge(this.progress, { [record.levelId]: record });
-    writeStorage(this.progress);
+    writeStorage(this.progress, import.meta.env.DEV ? DEV_STORAGE_KEY : STORAGE_KEY);
     this.emit();
   }
 
@@ -49,9 +56,20 @@ class ProgressStore {
   }
 }
 
-function readStorage(): ProgressSet {
+function prepareDevSession(): void {
   try {
-    const raw = globalThis.localStorage?.getItem(STORAGE_KEY);
+    const storage = globalThis.localStorage;
+    if (!storage || storage.getItem(DEV_SESSION_KEY) === __DEV_SESSION_ID__) return;
+    storage.removeItem(DEV_STORAGE_KEY);
+    storage.setItem(DEV_SESSION_KEY, __DEV_SESSION_ID__);
+  } catch {
+    // Storage may be unavailable in private browsing; progress remains in memory.
+  }
+}
+
+function readStorage(storageKey: string): ProgressSet {
+  try {
+    const raw = globalThis.localStorage?.getItem(storageKey);
     if (!raw) return {};
     const value: unknown = JSON.parse(raw);
     if (typeof value !== "object" || value === null || Array.isArray(value)) return {};
@@ -70,9 +88,9 @@ function readStorage(): ProgressSet {
   }
 }
 
-function writeStorage(progress: ProgressSet): void {
+function writeStorage(progress: ProgressSet, storageKey: string): void {
   try {
-    globalThis.localStorage?.setItem(STORAGE_KEY, JSON.stringify(progress));
+    globalThis.localStorage?.setItem(storageKey, JSON.stringify(progress));
   } catch {
     // Quota đầy hoặc chế độ riêng tư — mất tiến độ còn hơn sập app.
   }
