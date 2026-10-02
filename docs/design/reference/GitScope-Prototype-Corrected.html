@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<script src="https://unpkg.com/@rive-app/canvas@2.21.6/rive.js"></script>
+<script src="gitscope-engine.js"></script>
+<style>
+body{margin:0;background:#ffffff}
+a{color:#273896}a:hover{color:#1d2b78}
+@keyframes gsLogo{from{opacity:0;transform:translateY(18px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes gsFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes gsOut{to{opacity:0;transform:translateY(-28px)}}
+@keyframes gsIn{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
+@keyframes gsHalo{0%{opacity:0}15%{opacity:.85}100%{opacity:0}}
+@keyframes gsPulse{0%,100%{box-shadow:0 0 0 0 rgba(237,28,36,.35)}50%{box-shadow:0 0 0 12px rgba(237,28,36,0)}}
+button[data-gs-autofocus]:focus-visible{outline:none!important}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+</helmet>
+<div style="min-height:100dvh;display:flex;flex-direction:column;background:#ffffff;color:#1f2937;font:14px/21px system-ui,'Segoe UI','Noto Sans',Ubuntu,sans-serif">
+
+<header style="min-height:48px;flex:none;display:flex;align-items:stretch;gap:24px;padding:0 20px;background:#273896;color:#ffffff;position:sticky;top:0;z-index:10">
+  <div style="display:flex;align-items:center;flex:none;font:650 15px/1 system-ui,sans-serif;letter-spacing:-.01em">GitScope<span style="width:6px;height:6px;border-radius:50%;background:#ed1c24;margin-left:3px;transform:translateY(-5px)"></span></div>
+  <nav role="tablist" aria-label="Khu vực chính" style="display:flex;gap:4px;overflow-x:auto;min-width:0">
+    <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+      <button type="button" role="tab" id="{{ t.domId }}" aria-selected="{{ t.selected }}" tabindex="{{ t.tabIndex }}" sc-camel-on-click="{{ t.onClick }}" sc-camel-on-key-down="{{ t.onKeyDown }}" style="display:flex;align-items:center;gap:6px;padding:0 12px;border:0;border-bottom:3px solid {{ t.bar }};background:{{ t.bg }};color:{{ t.color }};font:{{ t.weight }} 13px/1 system-ui,sans-serif;cursor:pointer;white-space:nowrap" style-focus="outline:2px solid #ffffff;outline-offset:-4px">{{ t.label }}<sc-if value="{{ t.badge }}" hint-placeholder-val="{{ false }}"><span style="font:700 11px/1 ui-monospace,Menlo,monospace;color:#ffffff;background:#c9151c;border-radius:999px;padding:3px 6px">{{ t.badge }}</span></sc-if></button>
+    </sc-for>
+  </nav>
+</header>
+
+<!-- PRACTICE -->
+<sc-if value="{{ isPractice }}" hint-placeholder-val="{{ true }}">
+<main role="tabpanel" aria-labelledby="tab-practice" style="height:calc(100dvh - 48px);box-sizing:border-box;display:flex;flex-wrap:wrap-reverse;align-content:stretch;gap:16px;padding:16px">
+  <section aria-label="Git terminal" style="flex:5 1 380px;min-width:0;min-height:320px;display:flex;flex-direction:column;border-radius:10px;background:#141a3f;color:#f1f3fb;overflow:hidden">
+    <div style="height:40px;flex:none;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid #2a3268">
+      <span style="font:600 12px/1 system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#a9b1d6">Terminal</span><span style="flex:1"></span>
+      <span style="display:flex;align-items:center;gap:6px;font:12px/1 system-ui,sans-serif;color:#a9b1d6"><span style="font:500 11px/1 ui-monospace,Menlo,monospace;border:1px solid #3a448a;border-bottom-width:2px;border-radius:4px;padding:3px 5px">↑</span><span style="font:500 11px/1 ui-monospace,Menlo,monospace;border:1px solid #3a448a;border-bottom-width:2px;border-radius:4px;padding:3px 5px">↓</span>history</span>
+    </div>
+    <div ref="{{ pLogRef }}" role="log" aria-live="polite" aria-label="Command history" style="flex:1;min-height:0;overflow:auto;padding:16px 0;display:flex;flex-direction:column;gap:10px;font:13px/20px ui-monospace,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace">
+      <sc-if value="{{ pNoLog }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:0 16px;display:flex;flex-direction:column;gap:10px">
+          <div style="font:14px/21px system-ui,sans-serif;color:#a9b1d6">Type a Git command below and press Enter. The graph on the right updates after every command. Try one:</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{ pExamples }}" as="x" hint-placeholder-count="3"><button type="button" sc-camel-on-click="{{ x.onClick }}" style="font:12px/1 ui-monospace,Menlo,monospace;color:#f1f3fb;background:transparent;border:1px dashed #5c6aa8;border-radius:6px;padding:8px 10px;cursor:pointer" style-hover="border-color:#8fa0ff;background:#1f2757">{{ x.cmd }}</button></sc-for>
+          </div>
+        </div>
+      </sc-if>
+      <sc-for list="{{ pEntries }}" as="e" hint-placeholder-count="0">
+        <div style="padding:4px 16px;background:{{ e.bg }}">
+          <div style="white-space:pre-wrap;word-break:break-word"><span style="color:#8fa0ff">$</span> {{ e.cmd }}</div>
+          <sc-for list="{{ e.lines }}" as="l" hint-placeholder-count="1"><div style="display:flex;gap:8px;padding-left:14px;color:{{ l.color }};white-space:pre-wrap;word-break:break-word"><span aria-hidden="true">{{ l.mark }}</span><span>{{ l.t }}</span></div></sc-for>
+        </div>
+      </sc-for>
+    </div>
+    <div style="flex:none;padding:12px 14px;border-top:1px solid #2a3268;background:#1a2150">
+      <div style="position:relative">
+        <span aria-hidden="true" style="position:absolute;left:12px;top:11px;font:14px/20px ui-monospace,Menlo,monospace;color:#8fa0ff">$</span>
+        <input ref="{{ pInputRef }}" type="text" aria-label="Git command" autocomplete="off" spellcheck="false" placeholder="git commit -m &quot;first&quot;" value="{{ pInput }}" sc-camel-on-change="{{ pOnChange }}" sc-camel-on-key-down="{{ pOnKey }}" style="width:100%;box-sizing:border-box;height:42px;padding:0 92px 0 30px;border:1px {{ pBorderStyle }} {{ pBorderColor }};border-radius:6px;background:#141a3f;color:#f1f3fb;font:14px/20px ui-monospace,'SF Mono',Menlo,monospace;outline:none" style-focus="border-color:#8fa0ff;box-shadow:0 0 0 3px rgba(143,160,255,.28)">
+        <button type="button" sc-camel-on-click="{{ pRun }}" style="position:absolute;right:4px;top:4px;height:34px;padding:0 12px;border:0;border-radius:5px;background:#c9151c;color:#ffffff;font:600 13px/1 system-ui,sans-serif;cursor:pointer" style-hover="background:#a91118" style-focus="outline:2px solid #ffffff;outline-offset:2px">Run ↵</button>
+      </div>
+      <div role="status" style="margin-top:8px;font:12px/16px system-ui,sans-serif;color:#a9b1d6">{{ pHint }}</div>
+    </div>
+  </section>
+
+  <section aria-label="Commit graph" style="flex:7 1 440px;min-width:0;min-height:300px;display:flex;flex-direction:column;border:1px solid #e5e7eb;border-radius:10px;background:#ffffff;overflow:hidden">
+    <div style="min-height:44px;flex:none;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:6px 10px 6px 14px;border-bottom:1px solid #e5e7eb">
+      <span style="font:600 12px/1 system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#6b7280">Commit graph</span>
+      <span style="font:12px/1 system-ui,sans-serif;color:#6b7280">{{ pMeta }}</span>
+      <span style="flex:1"></span>
+      <span style="display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:4px;background:{{ pHeadBg }};border:{{ pHeadBorder }};font:700 12px/1 ui-monospace,Menlo,monospace;color:{{ pHeadColor }}">{{ pHeadText }}</span>
+      <span style="width:1px;height:20px;background:#e5e7eb"></span>
+      <div style="display:flex;gap:6px">
+        <button type="button" sc-camel-on-click="{{ pUndo }}" disabled="{{ pUndoDisabled }}" style="height:30px;padding:0 10px;border:1px solid #858c99;border-radius:6px;background:#ffffff;color:#1f2937;font:500 12px/1 system-ui,sans-serif;cursor:pointer" style-hover="background:#eef0f7" style-disabled="border-color:#e5e7eb;color:#9ca3af;cursor:default;background:#ffffff" style-focus="outline:2px solid #273896;outline-offset:2px">Undo</button>
+        <button type="button" sc-camel-on-click="{{ pRedo }}" disabled="{{ pRedoDisabled }}" style="height:30px;padding:0 10px;border:1px solid #858c99;border-radius:6px;background:#ffffff;color:#1f2937;font:500 12px/1 system-ui,sans-serif;cursor:pointer" style-hover="background:#eef0f7" style-disabled="border-color:#e5e7eb;color:#9ca3af;cursor:default;background:#ffffff" style-focus="outline:2px solid #273896;outline-offset:2px">Redo</button>
+        <button type="button" sc-camel-on-click="{{ pReset }}" style="height:30px;padding:0 10px;border:1px solid #858c99;border-radius:6px;background:#ffffff;color:#1f2937;font:500 12px/1 system-ui,sans-serif;cursor:pointer" style-hover="background:#eef0f7" style-focus="outline:2px solid #273896;outline-offset:2px">Reset</button>
+      </div>
+    </div>
+    <div style="flex:1;min-height:0;overflow:auto;display:flex;align-items:center;justify-content:center;padding:16px;background-color:#ffffff;background-image:radial-gradient(#e5e7eb 1px,transparent 1px);background-size:20px 20px">
+      <sc-if value="{{ pEmpty }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center">
+          <span style="width:34px;height:34px;border-radius:50%;border:2px dashed #858c99;box-sizing:border-box"></span>
+          <span style="font:14px/20px system-ui,sans-serif;color:#1f2937">No commits yet</span>
+          <span style="font:700 11px/1 ui-monospace,Menlo,monospace;color:#c9151c;background:#ffffff;border:1px dashed #ed1c24;border-radius:4px;padding:4px 6px">HEAD → main (unborn)</span>
+          <span style="font:12px/18px system-ui,sans-serif;color:#6b7280;max-width:32ch">Your first commit will appear here as a circle. Branch labels sit to its right.</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{ pHasGraph }}" hint-placeholder-val="{{ false }}">{{ pGraph }}</sc-if>
+    </div>
+    <div style="flex:none;display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:9px 14px;border-top:1px solid #e5e7eb;font:12px/1 system-ui,sans-serif;color:#6b7280">
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:50%;border:2px solid #273896;box-sizing:border-box"></span>commit</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:50%;background:#273896"></span>HEAD commit</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="font:600 11px/1 ui-monospace,Menlo,monospace;color:#273896;background:#e9ecf8;border:1px solid #b8c1e6;border-radius:4px;padding:3px 5px">main</span>branch</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="font:700 11px/1 ui-monospace,Menlo,monospace;color:#ffffff;background:#c9151c;border-radius:4px;padding:4px 5px">HEAD</span>attached</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="font:700 11px/1 ui-monospace,Menlo,monospace;color:#c9151c;background:#fde8e9;border:1px dashed #ed1c24;border-radius:4px;padding:3px 5px">HEAD · detached</span>detached</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:14px;height:14px;border-radius:50%;border:2px solid #ed1c24;box-sizing:border-box"></span>just created</span>
+    </div>
+  </section>
+</main>
+</sc-if>
+
+<!-- LEVELS -->
+<sc-if value="{{ isLevels }}" hint-placeholder-val="{{ false }}">
+<main role="tabpanel" aria-labelledby="tab-levels" style="display:flex;min-height:calc(100dvh - 48px)">
+  <sc-if value="{{ wide }}" hint-placeholder-val="{{ true }}">
+    <aside style="flex:0 0 272px;box-sizing:border-box;border-right:1px solid #e5e7eb;background:#f7f8fc;padding:20px 12px;display:flex;flex-direction:column;gap:16px">
+      <div style="padding:0 8px;display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:baseline;justify-content:space-between"><span style="font:600 12px/1 system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#273896">Levels</span><span style="font:12px/1 system-ui,sans-serif;color:#6b7280">{{ lvProgressText }}</span></div>
+        <div style="height:4px;border-radius:2px;background:#e5e7eb;overflow:hidden"><div style="width:{{ lvProgressPct }};height:100%;background:#273896"></div></div>
+      </div>
+      <nav aria-label="Levels"><ol style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px">
+        <sc-for list="{{ lvItems }}" as="it" hint-placeholder-count="8">
+          <li><button type="button" aria-current="{{ it.current }}" aria-label="{{ it.aria }}" sc-camel-on-click="{{ it.onClick }}" style="width:100%;display:flex;align-items:center;gap:10px;padding:8px;border:0;border-radius:6px;background:{{ it.bg }};box-shadow:{{ it.shadow }};color:#1f2937;font:{{ it.weight }} 13px/18px system-ui,sans-serif;text-align:left;cursor:pointer" style-hover="background:#eef0f7" style-focus="outline:2px solid #273896;outline-offset:-2px">
+            <span style="width:20px;height:20px;flex:none;box-sizing:border-box;border-radius:50%;border:{{ it.ring }};background:{{ it.iconBg }};color:#ffffff;display:flex;align-items:center;justify-content:center;font:700 11px/1 system-ui,sans-serif">{{ it.icon }}</span>
+            <span style="font:12px/1 ui-monospace,Menlo,monospace;color:{{ it.numColor }}">{{ it.num }}</span><span>{{ it.title }}</span>
+          </button></li>
+        </sc-for>
+      </ol></nav>
+    </aside>
+  </sc-if>
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:16px;padding:16px">
+    <sc-if value="{{ narrow }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <label style="display:flex;flex-direction:column;gap:6px;font:600 12px/1 system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#273896">Level · {{ lvProgressText }}
+          <sc-raw-select value="{{ lvSel }}" sc-camel-on-change="{{ lvOnSelect }}" style="height:44px;padding:0 10px;border:1px solid #858c99;border-radius:6px;background:#ffffff;color:#1f2937;font:500 14px/1 system-ui,sans-serif;text-transform:none;letter-spacing:0">
+            <sc-for list="{{ lvOptions }}" as="o" hint-placeholder-count="8"><option value="{{ o.id }}">{{ o.label }}</option></sc-for>
+          </sc-raw-select>
+        </label>
+        <div style="height:4px;border-radius:2px;background:#e5e7eb;overflow:hidden"><div style="width:{{ lvProgressPct }};height:100%;background:#273896"></div></div>
+      </div>
+    </sc-if>
+
+    <section aria-label="Level brief" style="flex:none;display:flex;flex-wrap:wrap;gap:16px 24px;align-items:flex-start;padding:18px 20px;border:1px solid #e5e7eb;border-radius:10px;background:#f7f8fc">
+      <div style="flex:1 1 360px;min-width:0;display:flex;flex-direction:column;gap:8px">
+        <div style="font:600 12px/1 system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#c9151c">{{ lvEyebrow }}</div>
+        <h1 style="margin:0;font:600 20px/28px system-ui,sans-serif;color:#273896">{{ lvTitle }}</h1>
+        <p style="margin:0;font:15px/22px system-ui,sans-serif;color:#1f2937;max-width:68ch;text-wrap:pretty">{{ lvGoal }}</p>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:4px;font:12px/1 system-ui,sans-serif;color:#6b7280">Allowed
+          <sc-for list="{{ lvAllowed }}" as="c" hint-placeholder-count="1"><span style="font:600 12px/1 ui-monospace,Menlo,monospace;color:#273896;background:#ffffff;border:1px solid #858c99;border-radius:4px;padding:5px 7px">{{ c }}</span></sc-for>
+        </div>
+      </div>
+      <div style="flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:12px">
+        <span style="font:12px/1 system-ui,sans-serif;color:#6b7280">Commands used <b style="font:600 14px/1 ui-monospace,Menlo,monospace;color:#1f2937;margin-left:4px">{{ lvCount }}</b></span>
+        <button type="button" sc-camel-on-click="{{ lvReset }}" style="height:32px;padding:0 12px;border:1px solid #858c99;border-radius:6px;background:#ffffff;color:#1f2937;font:500 13px/1 system-ui,sans-serif;cursor:pointer" style-hover="background:#eef0f7" style-focus="outline:2px solid #273896;outline-offset:2px">Reset level</button>
+      </div>
+    </section>
+
+    <sc-if value="{{ lvDoneNow }}" hint-placeholder-val="{{ false }}">
+      <section role="status" style="flex:none;display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:14px 16px;border:1px solid #a7d8b8;border-radius:10px;background:#e7f5ec;animation:gsFade .25s ease-out both">
+        <span style="width:32px;height:32px;flex:none;border-radius:50%;background:#15803d;color:#ffffff;display:flex;align-items:center;justify-content:center;font:700 16px/1 system-ui,sans-serif">✓</span>
+        <div style="flex:1 1 240px;min-width:0"><div style="font:600 16px/22px system-ui,sans-serif;color:#14532d">{{ lvDoneTitle }}</div><div style="font:14px/20px system-ui,sans-serif;color:#166534">{{ lvDoneSub }}</div></div>
+        <sc-if value="{{ lvHasNext }}" hint-placeholder-val="{{ true }}"><button ref="{{ nextRef }}" type="button" sc-camel-on-click="{{ lvNext }}" style="height:40px;padding:0 16px;border:0;border-radius:6px;background:#c9151c;color:#ffffff;font:600 14px/1 system-ui,sans-serif;cursor:pointer" style-hover="background:#a91118" style-focus="outline:2px solid #273896;outline-offset:2px">{{ lvNextLabel }}</button></sc-if>
+      </section>
+    </sc-if>
+
+    <div style="flex:1;min-height:560px;display:flex;flex-wrap:wrap-reverse;align-content:stretch;gap:16px">
+      <section aria-label="Git terminal" style="flex:5 1 340px;min-width:0;min-height:300px;display:flex;flex-direction:column;border-radius:10px;background:#141a3f;color:#f1f3fb;overflow:hidden">
+        <div style="height:40px;flex:none;display:flex;align-items:center;padding:0 14px;border-bottom:1px solid #2a3268"><span style="font:600 12px/1 system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#a9b1d6">Terminal</span></div>
+        <div ref="{{ lLogRef }}" role="log" aria-live="polite" aria-label="Command history" style="flex:1;min-height:0;overflow:auto;padding:16px 0;display:flex;flex-direction:column;gap:10px;font:13px/20px ui-monospace,'SF Mono',Menlo,monospace">
+          <sc-if value="{{ lNoLog }}" hint-placeholder-val="{{ true }}">
+            <div style="padding:0 16px;display:flex;flex-direction:column;gap:10px">
+              <div style="font:14px/21px system-ui,sans-serif;color:#a9b1d6">{{ lEmptyText }}</div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px"><sc-for list="{{ lExamples }}" as="x" hint-placeholder-count="1"><button type="button" sc-camel-on-click="{{ x.onClick }}" style="font:12px/1 ui-monospace,Menlo,monospace;color:#f1f3fb;background:transparent;border:1px dashed #5c6aa8;border-radius:6px;padding:8px 10px;cursor:pointer" style-hover="border-color:#8fa0ff;background:#1f2757">{{ x.cmd }}</button></sc-for></div>
+            </div>
+          </sc-if>
+          <sc-for list="{{ lEntries }}" as="e" hint-placeholder-count="0">
+            <div style="padding:4px 16px;background:{{ e.bg }}">
+              <div style="white-space:pre-wrap;word-break:break-word"><span style="color:#8fa0ff">$</span> {{ e.cmd }}</div>
+              <sc-for list="{{ e.lines }}" as="l" hint-placeholder-count="1"><div style="display:flex;gap:8px;padding-left:14px;color:{{ l.color }};white-space:pre-wrap;word-break:break-word"><span aria-hidden="true">{{ l.mark }}</span><span>{{ l.t }}</span></div></sc-for>
+            </div>
+          </sc-for>
+        </div>
+        <div style="flex:none;padding:12px 14px;border-top:1px solid #2a3268;background:#1a2150">
+          <div style="position:relative">
+            <span aria-hidden="true" style="position:absolute;left:12px;top:11px;font:14px/20px ui-monospace,Menlo,monospace;color:#8fa0ff">$</span>
+            <input ref="{{ lInputRef }}" type="text" aria-label="Git command" autocomplete="off" spellcheck="false" placeholder="{{ lPlaceholder }}" value="{{ lInput }}" sc-camel-on-change="{{ lOnChange }}" sc-camel-on-key-down="{{ lOnKey }}" style="width:100%;box-sizing:border-box;height:42px;padding:0 92px 0 30px;border:1px solid {{ lBorderColor }};border-radius:6px;background:#141a3f;color:#f1f3fb;font:14px/20px ui-monospace,'SF Mono',Menlo,monospace;outline:none" style-focus="border-color:#8fa0ff;box-shadow:0 0 0 3px rgba(143,160,255,.28)">
+            <button type="button" sc-camel-on-click="{{ lRun }}" style="position:absolute;right:4px;top:4px;height:34px;padding:0 12px;border:0;border-radius:5px;background:#c9151c;color:#ffffff;font:600 13px/1 system-ui,sans-serif;cursor:pointer" style-hover="background:#a91118" style-focus="outline:2px solid #ffffff;outline-offset:2px">Run ↵</button>
+          </div>
+          <div style="margin-top:8px;font:12px/16px system-ui,sans-serif;color:#a9b1d6">{{ lHint }}</div>
+        </div>
+      </section>
+      <section aria-label="Commit graph" style="flex:6 1 400px;min-width:0;min-height:280px;display:flex;flex-direction:column;border:1px solid #e5e7eb;border-radius:10px;background:#ffffff;overflow:hidden">
+        <div style="min-height:44px;flex:none;display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:6px 10px 6px 14px;border-bottom:1px solid #e5e7eb">
+          <span style="font:600 12px/1 system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#6b7280">Commit graph</span><span style="flex:1"></span>
+          <sc-if value="{{ lvMatch }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:4px;background:#e7f5ec;border:1px solid #a7d8b8;font:600 12px/1 system-ui,sans-serif;color:#166534">✓ Matches target</span></sc-if>
+          <div role="tablist" aria-label="Graph view" style="display:flex;padding:2px;border:1px solid #858c99;border-radius:6px;background:#ffffff">
+            <sc-for list="{{ lvViews }}" as="v" hint-placeholder-count="2"><button type="button" role="tab" aria-selected="{{ v.selected }}" sc-camel-on-click="{{ v.onClick }}" style="padding:6px 10px;border:0;border-radius:4px;background:{{ v.bg }};color:{{ v.color }};font:600 12px/1 system-ui,sans-serif;cursor:pointer" style-focus="outline:2px solid #273896;outline-offset:1px">{{ v.label }}</button></sc-for>
+          </div>
+        </div>
+        <div style="flex:1;min-height:0;position:relative;overflow:auto;display:flex;align-items:center;justify-content:center;padding:36px 16px 16px;background-color:#ffffff;background-image:radial-gradient(#e5e7eb 1px,transparent 1px);background-size:20px 20px">
+          <sc-if value="{{ lvTargetView }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:10px;left:12px;font:12px/16px system-ui,sans-serif;color:#1d2b78;background:#e9ecf8;border:1px dashed #273896;border-radius:4px;padding:3px 7px">Target — what your graph should look like · dashed = not created yet</span></sc-if>
+          <sc-if value="{{ lvEmpty }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center"><span style="width:34px;height:34px;border-radius:50%;border:2px dashed #858c99;box-sizing:border-box"></span><span style="font:14px/20px system-ui,sans-serif">No commits yet</span><span style="font:700 11px/1 ui-monospace,Menlo,monospace;color:#c9151c;border:1px dashed #ed1c24;border-radius:4px;padding:4px 6px">HEAD → main (unborn)</span></div>
+          </sc-if>
+          <sc-if value="{{ lvHasGraph }}" hint-placeholder-val="{{ false }}">{{ lvGraph }}</sc-if>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+</sc-if>
+
+<!-- REFERENCE -->
+<sc-if value="{{ isReference }}" hint-placeholder-val="{{ false }}">
+<main role="tabpanel" aria-labelledby="tab-reference" style="display:flex;flex-wrap:wrap;min-height:calc(100dvh - 48px)">
+  <aside style="flex:1 1 260px;max-width:{{ railMax }};box-sizing:border-box;border-right:1px solid #e5e7eb;background:#f7f8fc;padding:20px 12px;display:flex;flex-direction:column;gap:12px">
+    <div style="padding:0 8px;display:flex;flex-direction:column;gap:6px"><span style="font:600 12px/1 system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#273896">Command reference</span><span style="font:13px/18px system-ui,sans-serif;color:#6b7280">How each command changes commits, branches and HEAD.</span></div>
+    <nav aria-label="Commands" style="display:flex;flex-direction:column;gap:2px">
+      <sc-for list="{{ refItems }}" as="r" hint-placeholder-count="5">
+        <button type="button" aria-current="{{ r.current }}" sc-camel-on-click="{{ r.onClick }}" style="display:flex;flex-direction:column;gap:2px;padding:10px;border:0;border-radius:6px;background:{{ r.bg }};box-shadow:{{ r.shadow }};text-align:left;cursor:pointer" style-hover="background:#eef0f7" style-focus="outline:2px solid #273896;outline-offset:-2px">
+          <span style="font:600 14px/20px ui-monospace,Menlo,monospace;color:{{ r.color }}">git {{ r.key }}</span><span style="font:12px/17px system-ui,sans-serif;color:#6b7280">{{ r.description }}</span>
+        </button>
+      </sc-for>
+    </nav>
+  </aside>
+  <div style="flex:999 1 520px;min-width:0;box-sizing:border-box;padding:28px 32px;display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;flex-direction:column;gap:8px"><h1 style="margin:0;font:600 26px/32px ui-monospace,'SF Mono',Menlo,monospace;color:#273896">git {{ refKey }}</h1><p style="margin:0;font:15px/22px system-ui,sans-serif;color:#1f2937">{{ refDesc }}</p></div>
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 10px 10px 14px;border-radius:8px;background:#141a3f;color:#f1f3fb;font:14px/20px ui-monospace,Menlo,monospace"><span style="color:#8fa0ff">$</span><span style="flex:1;color:#f1f3fb">{{ refSyntax }}</span><button type="button" sc-camel-on-click="{{ refCopy }}" style="height:30px;padding:0 12px;border:1px solid #3a448a;border-radius:6px;background:#1a2150;color:#f1f3fb;font:500 12px/1 system-ui,sans-serif;cursor:pointer" style-hover="background:#1f2757" style-focus="outline:2px solid #8fa0ff;outline-offset:2px">{{ refCopyLabel }}</button></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">
+      <div style="padding:14px 16px;border:1px solid #e5e7eb;border-radius:8px;background:#f7f8fc"><div style="font:600 12px/1 system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#273896;margin-bottom:8px">What changes</div><p style="margin:0;font:14px/21px system-ui,sans-serif;text-wrap:pretty">{{ refEffect }}</p></div>
+      <div style="padding:14px 16px;border:1px solid #f1cf97;border-radius:8px;background:#fdf3e2"><div style="display:flex;align-items:center;gap:8px;font:600 12px/1 system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#92400e;margin-bottom:8px"><span style="width:16px;height:16px;border-radius:50%;background:#b45309;color:#ffffff;display:inline-flex;align-items:center;justify-content:center;font:700 11px/1 system-ui,sans-serif">!</span>Gotcha</div><p style="margin:0;font:14px/21px system-ui,sans-serif;color:#1f2937;text-wrap:pretty">{{ refGotcha }}</p></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">
+      <figure style="margin:0;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;background:#ffffff">
+        <figcaption style="height:38px;display:flex;align-items:center;padding:0 14px;border-bottom:1px solid #e5e7eb;font:600 12px/1 system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#6b7280">Before</figcaption>
+        <div style="min-height:280px;display:flex;align-items:center;justify-content:center;padding:16px;background-image:radial-gradient(#e5e7eb 1px,transparent 1px);background-size:20px 20px">{{ refBefore }}</div>
+      </figure>
+      <figure style="margin:0;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;background:#ffffff">
+        <figcaption style="min-height:38px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:6px 14px;border-bottom:1px solid #e5e7eb;font:600 12px/1 system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#6b7280">After
+          <sc-for list="{{ refChanges }}" as="c" hint-placeholder-count="1"><span style="text-transform:none;letter-spacing:0;font:600 11px/1 ui-monospace,Menlo,monospace;color:#c9151c;background:#fde8e9;border-radius:4px;padding:4px 6px">{{ c }}</span></sc-for>
+        </figcaption>
+        <div style="min-height:280px;display:flex;align-items:center;justify-content:center;padding:16px;background-image:radial-gradient(#e5e7eb 1px,transparent 1px);background-size:20px 20px">{{ refAfter }}</div>
+      </figure>
+    </div>
+  </div>
+</main>
+</sc-if>
+
+<!-- VERIFICATION -->
+<sc-if value="{{ isVerification }}" hint-placeholder-val="{{ false }}">
+<main role="tabpanel" aria-labelledby="tab-verification" style="width:100%;max-width:1160px;margin:0 auto;box-sizing:border-box;padding:36px 24px 56px;display:flex;flex-direction:column;gap:28px">
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="font:600 12px/1 system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#c9151c">Verification report</div>
+    <h1 style="margin:0;font:600 28px/34px system-ui,sans-serif;color:#273896;text-wrap:pretty">The engine matched real Git on all 6,160 test cases.</h1>
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;font:13px/18px system-ui,sans-serif;color:#6b7280">
+      <span>Generated <b style="font-weight:500;color:#1f2937">30 Sep 2026, 08:07 UTC</b></span>
+      <span style="display:inline-flex;align-items:center;gap:6px">Commit <span style="font-family:ui-monospace,Menlo,monospace;color:#1f2937">4448efb</span><button type="button" sc-camel-on-click="{{ copySha }}" style="font:500 11px/1 system-ui,sans-serif;color:#1f2937;background:#ffffff;border:1px solid #858c99;border-radius:4px;padding:4px 6px;cursor:pointer" style-focus="outline:2px solid #273896;outline-offset:2px">{{ shaLabel }}</button></span>
+      <span>Compared against <span style="font-family:ui-monospace,Menlo,monospace;color:#1f2937">git 2.43.0</span></span>
+      <span>Node <span style="font-family:ui-monospace,Menlo,monospace;color:#1f2937">v24.21.0</span></span>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
+    <div style="padding:16px;border:1px solid #a7d8b8;border-radius:10px;background:#e7f5ec;display:flex;flex-direction:column;gap:6px"><span style="font:13px/1 system-ui,sans-serif;color:#166534">Cases passed</span><span style="font:600 28px/1 ui-monospace,Menlo,monospace;color:#15803d">6,160<span style="font-size:16px;color:#166534"> / 6,160</span></span><span style="font:12px/16px system-ui,sans-serif;color:#166534">Repository state identical to git</span></div>
+    <div style="padding:16px;border:1px solid #a7d8b8;border-radius:10px;background:#e7f5ec;display:flex;flex-direction:column;gap:6px"><span style="font:13px/1 system-ui,sans-serif;color:#166534">Hard divergences</span><span style="font:600 28px/1 ui-monospace,Menlo,monospace;color:#15803d">0</span><span style="font:12px/16px system-ui,sans-serif;color:#166534">No commit, branch or HEAD mismatch</span></div>
+    <div style="padding:16px;border:1px solid #f1cf97;border-radius:10px;background:#fdf3e2;display:flex;flex-direction:column;gap:6px"><span style="font:13px/1 system-ui,sans-serif;color:#92400e">Soft output warnings</span><span style="font:600 28px/1 ui-monospace,Menlo,monospace;color:#b45309">19,806</span><span style="font:12px/16px system-ui,sans-serif;color:#92400e">Message text differs; counted per step</span></div>
+    <div style="padding:16px;border:1px solid #e5e7eb;border-radius:10px;background:#f7f8fc;display:flex;flex-direction:column;gap:6px"><span style="font:13px/1 system-ui,sans-serif;color:#6b7280">Run</span><span style="font:600 28px/1 ui-monospace,Menlo,monospace;color:#273896">18m 42s</span><span style="font:12px/16px system-ui,sans-serif;color:#6b7280">Depth 3 exhaustive + 5,000 random · seed 42</span></div>
+  </div>
+  <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1px;background:#e5e7eb;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden">
+    <div style="background:#ffffff;padding:16px 18px"><div style="font:600 14px/20px system-ui,sans-serif;color:#273896;margin-bottom:4px">Differential test</div><p style="margin:0;font:13px/20px system-ui,sans-serif;color:#6b7280;text-wrap:pretty">Each case runs the same command sequence in GitScope and in real git inside a temp folder, then compares the results.</p></div>
+    <div style="background:#ffffff;padding:16px 18px"><div style="display:flex;align-items:center;gap:8px;font:600 14px/20px system-ui,sans-serif;color:#273896;margin-bottom:4px"><span style="width:8px;height:8px;border-radius:50%;background:#ed1c24"></span>Hard divergence</div><p style="margin:0;font:13px/20px system-ui,sans-serif;color:#6b7280;text-wrap:pretty">Commits, branches or HEAD end up different. This fails the case.</p></div>
+    <div style="background:#ffffff;padding:16px 18px"><div style="display:flex;align-items:center;gap:8px;font:600 14px/20px system-ui,sans-serif;color:#273896;margin-bottom:4px"><span style="width:8px;height:8px;border-radius:50%;background:#b45309"></span>Soft warning</div><p style="margin:0;font:13px/20px system-ui,sans-serif;color:#6b7280;text-wrap:pretty">Only printed text differs, e.g. c1 instead of a real hash. State still matches.</p></div>
+  </section>
+  <section style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px"><h2 style="margin:0;font:600 17px/24px system-ui,sans-serif;color:#273896">Command coverage</h2><span style="font:13px/1 system-ui,sans-serif;color:#6b7280">Cases that use each command, of 6,160</span></div>
+    <div style="display:grid;grid-template-columns:84px minmax(0,1fr) 56px;gap:10px 14px;align-items:center;font:13px/1 ui-monospace,Menlo,monospace">
+      <span>commit</span><div style="height:10px;border-radius:3px;background:#e9ecf8"><div style="width:96.4%;height:100%;border-radius:3px;background:#273896"></div></div><span style="text-align:right">5,938</span>
+      <span>branch</span><div style="height:10px;border-radius:3px;background:#e9ecf8"><div style="width:96.3%;height:100%;border-radius:3px;background:#273896"></div></div><span style="text-align:right">5,935</span>
+      <span>switch</span><div style="height:10px;border-radius:3px;background:#e9ecf8"><div style="width:93%;height:100%;border-radius:3px;background:#273896"></div></div><span style="text-align:right">5,729</span>
+      <span>checkout</span><div style="height:10px;border-radius:3px;background:#e9ecf8"><div style="width:96%;height:100%;border-radius:3px;background:#273896"></div></div><span style="text-align:right">5,915</span>
+      <span>merge</span><div style="height:10px;border-radius:3px;background:#e9ecf8"><div style="width:66.8%;height:100%;border-radius:3px;background:#273896"></div></div><span style="text-align:right">4,113</span>
+    </div>
+  </section>
+  <section style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px"><h2 style="margin:0;font:600 17px/24px system-ui,sans-serif;color:#273896">Performance at scale</h2><span style="font:13px/1 system-ui,sans-serif;color:#6b7280">Log–log · solid = median · dashed = p95</span><span style="flex:1"></span>
+      <div role="tablist" style="display:flex;padding:2px;border:1px solid #858c99;border-radius:6px"><sc-for list="{{ perfOpts }}" as="v" hint-placeholder-count="2"><button type="button" role="tab" aria-selected="{{ v.selected }}" sc-camel-on-click="{{ v.onClick }}" style="padding:6px 10px;border:0;border-radius:4px;background:{{ v.bg }};color:{{ v.color }};font:600 12px/1 system-ui,sans-serif;cursor:pointer" style-focus="outline:2px solid #273896;outline-offset:1px">{{ v.label }}</button></sc-for></div>
+    </div>
+    <sc-if value="{{ perfChart }}" hint-placeholder-val="{{ true }}">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
+        <figure style="margin:0;padding:14px 16px;border:1px solid #e5e7eb;border-radius:10px;display:flex;flex-direction:column;gap:10px"><figcaption style="display:flex;justify-content:space-between"><span style="font:600 14px/1 ui-monospace,Menlo,monospace">layout()</span><span style="font:12px/1 system-ui,sans-serif;color:#6b7280">12.5 ms @ 10⁴</span></figcaption>
+          <svg sc-camel-view-box="0 0 300 150" width="100%" role="img" aria-label="layout scaling, median 0.25 ms at 100 commits to 224 ms at 100,000"><line x1="36" y1="120" x2="290" y2="120" stroke="#858c99"></line><line x1="36" y1="10" x2="36" y2="120" stroke="#858c99"></line><polyline points="36,112 120,90 205,64 290,22" fill="none" stroke="#273896" stroke-width="2"></polyline><polyline points="36,108 120,80 205,58 290,20" fill="none" stroke="#ed1c24" stroke-width="2" stroke-dasharray="5 4"></polyline><text x="36" y="136" font-size="10" fill="#6b7280" text-anchor="middle">10²</text><text x="120" y="136" font-size="10" fill="#6b7280" text-anchor="middle">10³</text><text x="205" y="136" font-size="10" fill="#6b7280" text-anchor="middle">10⁴</text><text x="290" y="136" font-size="10" fill="#6b7280" text-anchor="end">10⁵</text><text x="30" y="16" font-size="10" fill="#6b7280" text-anchor="end">224</text><text x="30" y="118" font-size="10" fill="#6b7280" text-anchor="end">0.25</text></svg></figure>
+        <figure style="margin:0;padding:14px 16px;border:1px solid #e5e7eb;border-radius:10px;display:flex;flex-direction:column;gap:10px"><figcaption style="display:flex;justify-content:space-between"><span style="font:600 14px/1 ui-monospace,Menlo,monospace">SVG render</span><span style="font:12px/1 system-ui,sans-serif;color:#6b7280">32 ms @ 10²</span></figcaption>
+          <svg sc-camel-view-box="0 0 300 150" width="100%" role="img" aria-label="SVG render scaling, median 32 ms at 100 commits to 1677 ms at 10,000"><line x1="36" y1="120" x2="290" y2="120" stroke="#858c99"></line><line x1="36" y1="10" x2="36" y2="120" stroke="#858c99"></line><polyline points="36,112 163,66 290,20" fill="none" stroke="#273896" stroke-width="2"></polyline><polyline points="36,110 163,58 290,18" fill="none" stroke="#ed1c24" stroke-width="2" stroke-dasharray="5 4"></polyline><text x="36" y="136" font-size="10" fill="#6b7280" text-anchor="middle">10²</text><text x="163" y="136" font-size="10" fill="#6b7280" text-anchor="middle">10³</text><text x="290" y="136" font-size="10" fill="#6b7280" text-anchor="end">10⁴</text><text x="30" y="16" font-size="10" fill="#6b7280" text-anchor="end">1.7k</text><text x="30" y="118" font-size="10" fill="#6b7280" text-anchor="end">32</text></svg></figure>
+        <figure style="margin:0;padding:14px 16px;border:1px solid #e5e7eb;border-radius:10px;display:flex;flex-direction:column;gap:10px"><figcaption style="display:flex;justify-content:space-between"><span style="font:600 14px/1 ui-monospace,Menlo,monospace">animation frame</span><span style="font:12px/1 system-ui,sans-serif;color:#6b7280">1 point</span></figcaption>
+          <div style="min-height:130px;display:flex;flex-direction:column;justify-content:center;gap:6px"><span style="font:600 30px/1 ui-monospace,Menlo,monospace;color:#273896">16.7 ms</span><span style="font:13px/18px system-ui,sans-serif;color:#6b7280">median frame at 200 commits (≈ 60 fps), 220 frames sampled</span></div></figure>
+      </div>
+    </sc-if>
+    <sc-if value="{{ perfTable }}" hint-placeholder-val="{{ false }}">
+      <div style="overflow:auto;border:1px solid #e5e7eb;border-radius:10px">
+        <sc-raw-table style="width:100%;border-collapse:collapse;font:13px/18px system-ui,sans-serif;font-variant-numeric:tabular-nums">
+          <sc-raw-thead><sc-raw-tr style="background:#f7f8fc;color:#273896"><sc-raw-th scope="col" style="text-align:left;padding:9px 14px">Series</sc-raw-th><sc-raw-th scope="col" style="text-align:right;padding:9px 14px">Commits (n)</sc-raw-th><sc-raw-th scope="col" style="text-align:right;padding:9px 14px">Median (ms)</sc-raw-th><sc-raw-th scope="col" style="text-align:right;padding:9px 14px">p95 (ms)</sc-raw-th><sc-raw-th scope="col" style="text-align:right;padding:9px 14px">Iterations</sc-raw-th></sc-raw-tr></sc-raw-thead>
+          <sc-raw-tbody>
+            <sc-raw-tr style="border-top:1px solid #e5e7eb"><sc-raw-td style="padding:8px 14px;font-family:ui-monospace,Menlo,monospace">layout()</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">100</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">0.2460</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">0.3314</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">7</sc-raw-td></sc-raw-tr>
+            <sc-raw-tr style="border-top:1px solid #e5e7eb"><sc-raw-td style="padding:8px 14px;font-family:ui-monospace,Menlo,monospace">layout()</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">1,000</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">1.428</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">3.754</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">7</sc-raw-td></sc-raw-tr>
+            <sc-raw-tr style="border-top:1px solid #e5e7eb"><sc-raw-td style="padding:8px 14px;font-family:ui-monospace,Menlo,monospace">layout()</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">10,000</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">12.55</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">19.01</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">7</sc-raw-td></sc-raw-tr>
+            <sc-raw-tr style="border-top:1px solid #e5e7eb"><sc-raw-td style="padding:8px 14px;font-family:ui-monospace,Menlo,monospace">layout()</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">100,000</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">224.3</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">228.9</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">7</sc-raw-td></sc-raw-tr>
+            <sc-raw-tr style="border-top:1px solid #e5e7eb"><sc-raw-td style="padding:8px 14px;font-family:ui-monospace,Menlo,monospace">SVG render</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">100</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">32.00</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">32.30</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">5</sc-raw-td></sc-raw-tr>
+            <sc-raw-tr style="border-top:1px solid #e5e7eb"><sc-raw-td style="padding:8px 14px;font-family:ui-monospace,Menlo,monospace">SVG render</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">1,000</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">146.8</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">206.3</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">5</sc-raw-td></sc-raw-tr>
+            <sc-raw-tr style="border-top:1px solid #e5e7eb"><sc-raw-td style="padding:8px 14px;font-family:ui-monospace,Menlo,monospace">SVG render</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">10,000</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">1677</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">1745</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">5</sc-raw-td></sc-raw-tr>
+            <sc-raw-tr style="border-top:1px solid #e5e7eb"><sc-raw-td style="padding:8px 14px;font-family:ui-monospace,Menlo,monospace">animation frame</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">200</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">16.70</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">16.70</sc-raw-td><sc-raw-td style="padding:8px 14px;text-align:right">220</sc-raw-td></sc-raw-tr>
+          </sc-raw-tbody>
+        </sc-raw-table>
+      </div>
+    </sc-if>
+  </section>
+  <section style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px"><h2 style="margin:0;font:600 17px/24px system-ui,sans-serif;color:#273896">Divergences</h2><span style="flex:1"></span>
+      <div role="tablist" aria-label="Filter by severity" style="display:flex;padding:2px;border:1px solid #858c99;border-radius:6px"><sc-for list="{{ divOpts }}" as="v" hint-placeholder-count="3"><button type="button" role="tab" aria-selected="{{ v.selected }}" sc-camel-on-click="{{ v.onClick }}" style="padding:6px 10px;border:0;border-radius:4px;background:{{ v.bg }};color:{{ v.color }};font:600 12px/1 system-ui,sans-serif;cursor:pointer" style-focus="outline:2px solid #273896;outline-offset:1px">{{ v.label }}</button></sc-for></div>
+    </div>
+    <div style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden">
+      <sc-if value="{{ divEmpty }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:10px;padding:20px 16px;font:14px/20px system-ui,sans-serif"><span style="font:600 12px/1 system-ui,sans-serif;color:#166534;background:#e7f5ec;border:1px solid #a7d8b8;border-radius:4px;padding:5px 8px">✓</span>No hard divergences recorded — every case ends in the same commits, branches and HEAD as real git.</div>
+      </sc-if>
+      <sc-for list="{{ divRows }}" as="d" hint-placeholder-count="3">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px 16px;padding:12px 16px;border-bottom:1px solid #e5e7eb;font:13px/19px ui-monospace,Menlo,monospace">
+          <div style="display:flex;align-items:center;gap:10px"><span style="color:#6b7280">{{ d.id }}</span><span style="font:600 11px/1 system-ui,sans-serif;color:#92400e;background:#fdf3e2;border:1px solid #f1cf97;border-radius:4px;padding:4px 6px">soft · output</span></div>
+          <div><div style="font:600 11px/16px system-ui,sans-serif;color:#6b7280">Commands</div>{{ d.commands }}</div>
+          <div><div style="font:600 11px/16px system-ui,sans-serif;color:#6b7280">Real git</div>{{ d.expected }}</div>
+          <div><div style="font:600 11px/16px system-ui,sans-serif;color:#6b7280">GitScope</div>{{ d.actual }}</div>
+        </div>
+      </sc-for>
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:#f7f8fc;font:13px/1 system-ui,sans-serif;color:#6b7280">{{ divFooter }}</div>
+    </div>
+  </section>
+</main>
+</sc-if>
+
+<!-- SPLASH -->
+<sc-if value="{{ showSplash }}" hint-placeholder-val="{{ true }}">
+  <div role="dialog" aria-modal="true" aria-label="Welcome to GitScope" sc-camel-on-click="{{ enter }}" style="position: fixed; inset: 0; z-index: 100; background: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; box-sizing: border-box; cursor: pointer; overflow: hidden; animation: {{ splashAnim }}; pointer-events: {{ splashPE }}">
+    
+    <div style="width:min(360px,72vw);aspect-ratio:360/150;overflow:hidden;flex:none;animation:gsLogo 1s cubic-bezier(.2,.8,.2,1) both">
+      <img src="usth-logo.png" alt="USTH — Vietnam France University" style="display:block;width:100%;max-width:100%;height:auto;margin-top:-29%">
+    </div>
+    <div style="position:relative;width:min(440px,86vw);aspect-ratio:16/10;flex:none;animation:gsFade .8s .5s both">
+      <sc-if value="{{ rivePoster }}" hint-placeholder-val="{{ true }}"><img src="messy-files-poster.png" alt="" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain"></sc-if>
+      <sc-if value="{{ riveOk }}" hint-placeholder-val="{{ true }}"><canvas ref="{{ riveRef }}" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;display:block"></canvas></sc-if>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;animation:gsFade .7s .8s both">
+      <div style="font:700 28px/34px system-ui,sans-serif;color:#273896;letter-spacing:-.01em">GitScope</div>
+      <div style="font:15px/22px system-ui,sans-serif;color:#6b7280;max-width:40ch;text-wrap:pretty">Học Git bằng cách gõ lệnh và nhìn commit graph thay đổi.</div>
+    </div>
+    <button ref="{{ ctaRef }}" type="button" sc-camel-on-click="{{ enter }}" style="height:48px;padding:0 26px;border:0;border-radius:999px;background:#c9151c;color:#ffffff;font:600 15px/1 system-ui,sans-serif;cursor:pointer;animation:gsFade .6s 1.1s both,gsPulse 2.4s 2s infinite" style-hover="background:#a91118" style-focus-visible="outline:2px solid #273896;outline-offset:3px">Nhấn để bắt đầu →</button>
+    <div style="font:12px/16px system-ui,sans-serif;color:#6b7280;animation:gsFade .6s 1.3s both">hoặc nhấn Enter</div>
+  </div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;skipSplash&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;startTab&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;practice&quot;,&quot;levels&quot;,&quot;reference&quot;,&quot;verification&quot;],&quot;default&quot;:&quot;practice&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = { splash: 'show', tab: 'practice', riveOk: true, riveReady: false, narrow: window.innerWidth < 900, ready: !!window.GS,
+    p: null, lv: null, done: {}, refSel: 'commit', copied: false, shaCopied: false, divFilter: 'soft', perf: 'chart' };
+  pInputRef = React.createRef(); lInputRef = React.createRef(); pLogRef = React.createRef(); lLogRef = React.createRef();
+  riveRef = React.createRef(); nextRef = React.createRef(); ctaRef = React.createRef();
+  reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  componentDidMount() {
+    if (this.props.skipSplash) this.setState({ splash: 'gone' });
+    if (this.props.startTab) this.setState({ tab: this.props.startTab });
+    const boot = () => {
+      if (!window.GS) return setTimeout(boot, 50);
+      let done = {};
+      try { done = JSON.parse(localStorage.getItem('gitscope-proto-progress') || '{}'); } catch (e) {}
+      this.setState({ ready: true, done, p: this.initP(), lv: this.loadLevel(window.GS.levels[0].id) });
+    };
+    boot();
+    this.onResize = () => this.setState({ narrow: window.innerWidth < 900 });
+    window.addEventListener('resize', this.onResize);
+    this.onKey = (e) => { if (this.state.splash === 'show' && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); this.enter(); } };
+    window.addEventListener('keydown', this.onKey);
+    setTimeout(() => { const el0 = this.ctaRef.current; const fade = el0 && el0.getAnimations().find((a) => a.animationName === 'gsFade'); (fade ? fade.finished : Promise.resolve()).catch(() => {}).then(() => { const el = this.ctaRef.current; if (this.state.splash !== 'show' || !el) return; el.setAttribute('data-gs-autofocus', ''); el.focus({ preventScroll: true }); const clear = () => { el.removeAttribute('data-gs-autofocus'); window.removeEventListener('keydown', clear, true); el.removeEventListener('blur', clear); }; window.addEventListener('keydown', clear, true); el.addEventListener('blur', clear); }); }, 50);
+    this.startRive(0);
+  }
+  componentWillUnmount() { window.removeEventListener('resize', this.onResize); window.removeEventListener('keydown', this.onKey); this.rive && this.rive.cleanup(); }
+  startRive(tries) {
+    if (this.state.splash === 'gone') return;
+    const R = window.rive, c = this.riveRef.current;
+    if (!R || !c) { if (tries > 60) return this.setState({ riveOk: false }); return setTimeout(() => this.startRive(tries + 1), 100); }
+    try {
+      const inst = new R.Rive({ src: 'assets/messy-files.riv', canvas: c, autoplay: true,
+        layout: new R.Layout({ fit: R.Fit.Contain, alignment: R.Alignment.Center }),
+        onLoad: () => { this.setState({ riveReady: true }); inst.resizeDrawingSurfaceToCanvas(); const sm = inst.stateMachineNames; if (sm && sm.length) inst.play(sm[0]); },
+        onLoadError: () => this.setState({ riveOk: false }) });
+      this.rive = inst;
+    } catch (e) { this.setState({ riveOk: false }); }
+  }
+  componentDidUpdate(pp, ps) {
+    const sc = (ref) => { const el = ref.current; if (el) el.scrollTop = el.scrollHeight; };
+    if (this.state.p && ps.p && this.state.p.log.length !== ps.p.log.length) sc(this.pLogRef);
+    if (this.state.lv && ps.lv && this.state.lv.log.length !== ps.lv.log.length) sc(this.lLogRef);
+    if (this.state.lv && this.state.lv.doneNow && !(ps.lv && ps.lv.doneNow)) setTimeout(() => this.nextRef.current && this.nextRef.current.focus(), 60);
+  }
+  enter = () => {
+    if (this.state.splash !== 'show') return;
+    this.setState({ splash: 'leaving' });
+    setTimeout(() => {
+      this.setState({ splash: 'gone' });
+      if (this.rive) { this.rive.cleanup(); this.rive = null; }
+      const r = this.state.tab === 'levels' ? this.lInputRef : this.pInputRef;
+      r.current && r.current.focus();
+    }, this.reduced ? 0 : 460);
+  };
+
+  initP() { return { repo: window.GS.empty(), log: [], hist: [], fut: [], input: '', cmdHist: [], cur: null, locked: false, newId: null, lastErr: false }; }
+  loadLevel(id) {
+    const L = window.GS.levels.find((l) => l.id === id);
+    return { sel: id, repo: window.GS.fromShape(L.initial), target: window.GS.fromShape(L.target), log: [], input: '', cmdHist: [], cur: null, count: 0, doneNow: false, view: 'current', newId: null, lastErr: false };
+  }
+  histNav(key, dir) {
+    const s = this.state[key]; if (!s.cmdHist.length) return;
+    let cur = s.cur === null ? (dir < 0 ? s.cmdHist.length - 1 : null) : s.cur + dir;
+    if (cur !== null && cur < 0) cur = 0;
+    if (cur !== null && cur >= s.cmdHist.length) cur = null;
+    this.setState({ [key]: { ...s, cur, input: cur === null ? '' : s.cmdHist[cur] } });
+  }
+  runP = () => {
+    const p = this.state.p; if (!p || p.locked) return;
+    const line = p.input.trim(); if (!line) return;
+    const res = window.GS.run(p.repo, line);
+    const next = { ...p, input: '', cur: null, cmdHist: [...p.cmdHist, line], log: [...p.log, { cmd: line, lines: res.out, err: res.err }], lastErr: res.err };
+    if (res.changed) { next.hist = [...p.hist, p.repo]; next.fut = []; next.repo = res.repo; next.newId = res.newId || null; next.locked = !this.reduced; }
+    this.setState({ p: next });
+    if (next.locked) setTimeout(() => this.setState((s) => ({ p: { ...s.p, locked: false } })), 300);
+  };
+  runL = () => {
+    const lv = this.state.lv; if (!lv) return;
+    const line = lv.input.trim(); if (!line) return;
+    const L = window.GS.levels.find((l) => l.id === lv.sel);
+    const res = window.GS.run(lv.repo, line, L.allowed);
+    const counted = res.sub && L.allowed.includes(res.sub);
+    const repo = res.changed ? res.repo : lv.repo;
+    const count = lv.count + (counted ? 1 : 0);
+    const completed = !res.err && window.GS.check(repo, lv.target);
+    const next = { ...lv, input: '', cur: null, cmdHist: [...lv.cmdHist, line], log: [...lv.log, { cmd: line, lines: res.out, err: res.err }], repo, count, lastErr: res.err, view: 'current', newId: res.changed ? (res.newId || null) : lv.newId };
+    let done = this.state.done;
+    if (completed && !lv.doneNow) {
+      next.doneNow = true;
+      done = { ...done, [lv.sel]: { commandCount: count, completedAt: new Date().toISOString() } };
+      try { localStorage.setItem('gitscope-proto-progress', JSON.stringify(done)); } catch (e) {}
+    }
+    this.setState({ lv: next, done });
+  };
+  selectLevel = (id) => { this.setState({ lv: this.loadLevel(id) }); setTimeout(() => this.lInputRef.current && this.lInputRef.current.focus(), 30); };
+  setTab = (id, focus) => { this.setState({ tab: id }); if (focus) setTimeout(() => { const el = document.getElementById('tab-' + id); el && el.focus(); }, 0); };
+
+  graph(repo, o = {}) {
+    const h = React.createElement, G = window.GS;
+    const Lo = G.layout(repo); if (!Lo.nodes.length) return null;
+    const hc = G.headCommit(repo), pos = {}; Lo.nodes.forEach((n) => (pos[n.id] = n));
+    const chipsFor = (id) => {
+      const names = Object.keys(repo.branches).filter((b) => repo.branches[b] === id).sort();
+      const att = !repo.head.detached && names.includes(repo.head.ref);
+      const list = att ? [{ k: 'hb', name: repo.head.ref }] : [];
+      names.filter((n) => !(att && n === repo.head.ref)).forEach((n) => list.push({ k: 'b', name: n }));
+      if (repo.head.detached && repo.head.commit === id) list.push({ k: 'd' });
+      return list;
+    };
+    const tw = (s) => s.length * 6.8 + 14;
+    const cw = (c) => (c.k === 'hb' ? 42 + tw(c.name) : c.k === 'b' ? tw(c.name) : tw('HEAD · detached'));
+    let right = 0;
+    Lo.nodes.forEach((n) => { const w = chipsFor(n.id).reduce((m, c) => Math.max(m, cw(c)), 0); right = Math.max(right, n.x + (w ? 30 + w : 24)); });
+    const W = Math.max(right + 16, 160), Hh = Lo.maxDepth * 80 + 80, s = o.scale || 1.35;
+    const mono = "ui-monospace,'SF Mono',Menlo,monospace";
+    const kids = [];
+    Lo.edges.forEach((e) => {
+      const a = pos[e.from], b = pos[e.to], key = e.from + '>' + e.to;
+      const d = a.x === b.x ? `M${a.x} ${a.y - 16} L${b.x} ${b.y + 16}` : `M${a.x} ${a.y - 16} C${a.x} ${a.y - 46} ${b.x} ${b.y + 46} ${b.x} ${b.y + 16}`;
+      kids.push(h('path', { key: 'e' + key, d, fill: 'none', stroke: o.changedEdges && o.changedEdges.has(key) ? '#ed1c24' : '#9aa1b5', strokeWidth: 2, strokeDasharray: o.dashed && o.dashed.has(e.from) ? '4 4' : undefined }));
+      if (o.parentLabels && repo.commits[e.from].parents.length > 1) {
+        const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+        kids.push(h('text', { key: 'pl' + key, x: a.x === b.x ? a.x - 8 : mx + 8, y: my + 4, textAnchor: a.x === b.x ? 'end' : 'start', fontSize: 10, fill: '#6b7280', fontFamily: 'system-ui,sans-serif' }, e.i === 0 ? '1st parent' : '2nd parent'));
+      }
+    });
+    Lo.nodes.forEach((n) => {
+      const c = repo.commits[n.id], isHead = n.id === hc, det = repo.head.detached && isHead;
+      const dashed = o.dashed && o.dashed.has(n.id), changed = o.changed && o.changed.has(n.id);
+      const label = n.id.length <= 4 ? n.id : n.id.slice(0, 3) + '…';
+      const cs = chipsFor(n.id);
+      const inner = [h('title', { key: 't' }, `${n.id} — ${c.msg}${c.parents.length ? ' · parents ' + c.parents.join(', ') : ' · root'}`)];
+      if (o.newId === n.id) inner.push(h('circle', { key: 'halo' + n.id, r: 23, fill: 'none', stroke: '#ed1c24', strokeWidth: 2, style: { animation: 'gsHalo 1.4s ease-out both' } }));
+      if (changed) inner.push(h('circle', { key: 'ch', r: 23, fill: 'none', stroke: '#ed1c24', strokeWidth: 2, opacity: 0.5 }));
+      inner.push(h('circle', { key: 'c', r: 16, fill: det ? '#fde8e9' : isHead ? '#273896' : '#ffffff', stroke: det ? '#c9151c' : '#273896', strokeWidth: 2, strokeDasharray: dashed ? '4 3' : undefined }));
+      inner.push(h('text', { key: 'l', y: 4, textAnchor: 'middle', fontSize: label.length > 3 ? 10 : 11, fontWeight: isHead ? 700 : 500, fontFamily: mono, fill: det ? '#c9151c' : isHead ? '#ffffff' : '#1f2937' }, label));
+      const y0 = -(cs.length * 24 - 4) / 2;
+      cs.forEach((ch, i) => {
+        const y = y0 + i * 24, x0 = 30;
+        if (ch.k === 'hb') {
+          const bw = tw(ch.name);
+          inner.push(h('rect', { key: 'hr' + i, x: x0, y, width: 42, height: 20, rx: 4, fill: '#c9151c' }));
+          inner.push(h('text', { key: 'ht' + i, x: x0 + 21, y: y + 14, textAnchor: 'middle', fontSize: 11, fontWeight: 700, fontFamily: mono, fill: '#ffffff' }, 'HEAD'));
+          inner.push(h('rect', { key: 'br' + i, x: x0 + 43, y, width: bw, height: 20, rx: 4, fill: '#e9ecf8', stroke: '#b8c1e6' }));
+          inner.push(h('text', { key: 'bt' + i, x: x0 + 43 + bw / 2, y: y + 14, textAnchor: 'middle', fontSize: 11, fontWeight: 600, fontFamily: mono, fill: '#273896' }, ch.name));
+        } else if (ch.k === 'b') {
+          const bw = tw(ch.name);
+          inner.push(h('rect', { key: 'br' + i, x: x0, y, width: bw, height: 20, rx: 4, fill: '#e9ecf8', stroke: '#b8c1e6' }));
+          inner.push(h('text', { key: 'bt' + i, x: x0 + bw / 2, y: y + 14, textAnchor: 'middle', fontSize: 11, fontWeight: 600, fontFamily: mono, fill: '#273896' }, ch.name));
+        } else {
+          const bw = tw('HEAD · detached');
+          inner.push(h('rect', { key: 'dr' + i, x: x0, y, width: bw, height: 20, rx: 4, fill: '#fde8e9', stroke: '#ed1c24', strokeDasharray: '3 2' }));
+          inner.push(h('text', { key: 'dt' + i, x: x0 + bw / 2, y: y + 14, textAnchor: 'middle', fontSize: 11, fontWeight: 700, fontFamily: mono, fill: '#c9151c' }, 'HEAD · detached'));
+        }
+      });
+      const refsTxt = cs.map((ch) => (ch.k === 'hb' ? `HEAD attached to ${ch.name}` : ch.k === 'b' ? `branch ${ch.name}` : 'HEAD detached')).join(', ');
+      kids.push(h('g', { key: 'n' + n.id, 'data-commit-id': n.id, tabIndex: 0, 'aria-label': `commit ${n.id}${refsTxt ? ', ' + refsTxt : ''}`, style: { transform: `translate(${n.x}px, ${n.y}px)`, transition: 'transform 300ms cubic-bezier(.2,.8,.2,1)', outline: 'none' } },
+        h('g', { style: { animation: 'gsIn 300ms ease-out both' } }, inner)));
+    });
+    return h('svg', { viewBox: `0 0 ${W} ${Hh}`, width: Math.round(W * s), height: Math.round(Hh * s), role: 'group', 'aria-label': o.label || 'Commit graph', style: { maxWidth: '100%', height: 'auto', flex: 'none', overflow: 'visible' } }, kids);
+  }
+
+  seg(opts, cur, set) {
+    return opts.map(([v, label]) => ({ label, selected: v === cur, bg: v === cur ? '#273896' : 'transparent', color: v === cur ? '#ffffff' : '#6b7280', onClick: () => set(v) }));
+  }
+  entries(log) {
+    return log.map((e, i) => ({ cmd: e.cmd, bg: i === log.length - 1 ? '#1f2757' : 'transparent',
+      lines: e.lines.map((t, j) => ({ t, color: e.err ? '#ff8a8f' : '#a9b1d6', mark: e.err && j === 0 ? '✕' : '' })) }));
+  }
+
+  renderVals() {
+    const G = window.GS, st = this.state;
+    const TABS = [['practice', 'Practice'], ['levels', 'Levels'], ['reference', 'Reference'], ['verification', 'Verification']];
+    const doneCount = Object.keys(st.done).length;
+    const tabs = TABS.map(([id, label], i) => ({ domId: 'tab-' + id, label, selected: st.tab === id, tabIndex: st.tab === id ? 0 : -1,
+      bg: st.tab === id ? '#1d2b78' : 'transparent', color: st.tab === id ? '#ffffff' : '#dfe3f5', bar: st.tab === id ? '#ed1c24' : 'transparent', weight: st.tab === id ? 600 : 500,
+      badge: id === 'levels' ? `${doneCount}/8` : '', onClick: () => this.setTab(id),
+      onKeyDown: (e) => { const k = e.key; let j = null; if (k === 'ArrowRight') j = (i + 1) % 4; if (k === 'ArrowLeft') j = (i + 3) % 4; if (k === 'Home') j = 0; if (k === 'End') j = 3; if (j !== null) { e.preventDefault(); this.setTab(TABS[j][0], true); } } }));
+    const base = { tabs, isPractice: st.tab === 'practice', isLevels: st.tab === 'levels', isReference: st.tab === 'reference', isVerification: st.tab === 'verification',
+      showSplash: st.splash !== 'gone', splashAnim: st.splash === 'leaving' ? 'gsOut 450ms cubic-bezier(.4,0,1,1) forwards' : 'none', splashPE: st.splash === 'leaving' ? 'none' : 'auto',
+      enter: this.enter, riveOk: st.riveOk, rivePoster: !st.riveOk || !st.riveReady, riveRef: this.riveRef, ctaRef: this.ctaRef, pInputRef: this.pInputRef, lInputRef: this.lInputRef, pLogRef: this.pLogRef, lLogRef: this.lLogRef, nextRef: this.nextRef,
+      wide: !st.narrow, narrow: st.narrow, railMax: st.narrow ? '100%' : '300px' };
+    if (!G || !st.p || !st.lv) return { ...base, pNoLog: true, pEmpty: true, pHasGraph: false, lNoLog: true, lvEmpty: true, lvHasGraph: false };
+
+    // Practice
+    const p = st.p, hc = G.headCommit(p.repo), nC = Object.keys(p.repo.commits).length, nB = Object.keys(p.repo.branches).length;
+    let headText, headBg, headColor, headBorder;
+    if (p.repo.head.detached) { headText = `HEAD detached @ ${p.repo.head.commit}`; headBg = '#fde8e9'; headColor = '#c9151c'; headBorder = '1px dashed #ed1c24'; }
+    else if (!hc) { headText = `HEAD → ${p.repo.head.ref} (unborn)`; headBg = '#ffffff'; headColor = '#c9151c'; headBorder = '1px dashed #ed1c24'; }
+    else { headText = `HEAD → ${p.repo.head.ref} @ ${hc}`; headBg = '#c9151c'; headColor = '#ffffff'; headBorder = '1px solid #c9151c'; }
+    const fill = (key, ref) => (cmd) => ({ cmd, onClick: () => { this.setState((s) => ({ [key]: { ...s[key], input: cmd.replace(/<[^>]+>$/, '') } })); setTimeout(() => ref.current && ref.current.focus(), 0); } });
+    const pGraph = this.graph(p.repo, { newId: p.newId });
+    const practice = {
+      pNoLog: !p.log.length, pEntries: this.entries(p.log), pExamples: ['git commit -m "first"', 'git branch feature', 'git switch -c feature'].map(fill('p', this.pInputRef)),
+      pInput: p.input, pOnChange: (e) => this.setState({ p: { ...this.state.p, input: e.target.value, lastErr: false } }),
+      pOnKey: (e) => { if (e.key === 'Enter') { e.preventDefault(); this.runP(); } else if (e.key === 'ArrowUp') { e.preventDefault(); this.histNav('p', -1); } else if (e.key === 'ArrowDown') { e.preventDefault(); this.histNav('p', 1); } },
+      pRun: () => { this.runP(); this.pInputRef.current && this.pInputRef.current.focus(); },
+      pBorderStyle: p.locked ? 'dashed' : 'solid', pBorderColor: p.lastErr ? '#ff8a8f' : '#3a448a',
+      pHint: p.locked ? 'Updating graph…' : 'Available: commit · branch · switch · checkout · merge',
+      pMeta: `${nC} commit${nC === 1 ? '' : 's'} · ${nB} branch${nB === 1 ? '' : 'es'}`,
+      pHeadText: headText, pHeadBg: headBg, pHeadColor: headColor, pHeadBorder: headBorder,
+      pUndo: () => { const q = this.state.p; if (!q.hist.length) return; this.setState({ p: { ...q, repo: q.hist[q.hist.length - 1], hist: q.hist.slice(0, -1), fut: [q.repo, ...q.fut], newId: null } }); },
+      pRedo: () => { const q = this.state.p; if (!q.fut.length) return; this.setState({ p: { ...q, repo: q.fut[0], fut: q.fut.slice(1), hist: [...q.hist, q.repo], newId: null } }); },
+      pReset: () => { this.setState({ p: this.initP() }); this.pInputRef.current && this.pInputRef.current.focus(); },
+      pUndoDisabled: !p.hist.length, pRedoDisabled: !p.fut.length, pEmpty: !nC, pHasGraph: !!pGraph, pGraph,
+    };
+
+    // Levels
+    const lv = st.lv, L = G.levels.find((l) => l.id === lv.sel), idx = G.levels.indexOf(L), nextL = G.levels[idx + 1];
+    const pad = (n) => String(n).padStart(2, '0');
+    const EX = { commit: 'git commit -m "next"', branch: 'git branch feature', switch: 'git switch feature', checkout: 'git checkout <commit>', merge: 'git merge feature' };
+    const match = G.check(lv.repo, lv.target);
+    let lvGraph;
+    if (lv.view === 'target') {
+      const cur = new Set(G.sigs(lv.repo).values()), ts = G.sigs(lv.target);
+      lvGraph = this.graph(lv.target, { dashed: new Set([...ts.entries()].filter(([, v]) => !cur.has(v)).map(([k]) => k)), parentLabels: true, label: 'Target graph' });
+    } else lvGraph = this.graph(lv.repo, { newId: lv.newId, parentLabels: true });
+    const shownRepo = lv.view === 'target' ? lv.target : lv.repo;
+    const levels = {
+      lvItems: G.levels.map((l) => { const sel = l.id === lv.sel, d = !!st.done[l.id];
+        return { num: pad(l.order), title: l.title, current: sel ? 'step' : undefined, aria: `Level ${pad(l.order)}, ${l.title}, ${d ? 'completed' : sel ? 'current' : 'not started'}`,
+          bg: sel ? '#e9ecf8' : 'transparent', shadow: sel ? 'inset 3px 0 0 #ed1c24' : 'none', weight: sel ? 600 : 400,
+          ring: d ? '1px solid #15803d' : sel ? '2px solid #273896' : '1px dashed #858c99', iconBg: d ? '#15803d' : 'transparent', icon: d ? '✓' : '', numColor: sel ? '#c9151c' : '#6b7280',
+          onClick: () => this.selectLevel(l.id) }; }),
+      lvOptions: G.levels.map((l) => ({ id: l.id, label: `${pad(l.order)} · ${l.title}${st.done[l.id] ? '  ✓' : ''}` })),
+      lvSel: lv.sel, lvOnSelect: (e) => this.selectLevel(e.target.value),
+      lvProgressText: `${doneCount} of 8 complete`, lvProgressPct: `${(doneCount / 8) * 100}%`,
+      lvEyebrow: `Level ${pad(L.order)} · ${lv.doneNow ? 'Complete' : st.done[L.id] ? 'Completed before · replaying' : 'In progress'}`,
+      lvTitle: L.title, lvGoal: L.goal, lvAllowed: L.allowed.map((c) => 'git ' + c), lvCount: lv.count,
+      lvReset: () => this.selectLevel(lv.sel), lvDoneNow: lv.doneNow,
+      lvDoneTitle: `Level complete · ${lv.count} command${lv.count === 1 ? '' : 's'}`,
+      lvDoneSub: nextL ? 'Your graph matches the target.' : 'Your graph matches the target — all 8 levels done.',
+      lvHasNext: !!nextL, lvNextLabel: nextL ? `Next: ${pad(nextL.order)} ${nextL.title} →` : '', lvNext: () => nextL && this.selectLevel(nextL.id),
+      lvMatch: match, lvViews: this.seg([['current', 'Current'], ['target', 'Target']], lv.view, (v) => this.setState({ lv: { ...this.state.lv, view: v } })),
+      lvTargetView: lv.view === 'target', lvEmpty: !Object.keys(shownRepo.commits).length, lvHasGraph: !!lvGraph, lvGraph,
+      lNoLog: !lv.log.length, lEntries: this.entries(lv.log), lExamples: L.allowed.map((c) => EX[c]).map(fill('lv', this.lInputRef)),
+      lEmptyText: `Only ${L.allowed.map((c) => 'git ' + c).join(' and ')} work${L.allowed.length > 1 ? '' : 's'} in this level. Toggle Target on the graph to see the goal.`,
+      lPlaceholder: EX[L.allowed[0]].replace(/ <[^>]+>$/, ''), lInput: lv.input,
+      lOnChange: (e) => this.setState({ lv: { ...this.state.lv, input: e.target.value, lastErr: false } }),
+      lOnKey: (e) => { if (e.key === 'Enter') { e.preventDefault(); this.runL(); } else if (e.key === 'ArrowUp') { e.preventDefault(); this.histNav('lv', -1); } else if (e.key === 'ArrowDown') { e.preventDefault(); this.histNav('lv', 1); } },
+      lRun: () => { this.runL(); this.lInputRef.current && this.lInputRef.current.focus(); },
+      lBorderColor: lv.lastErr ? '#ff8a8f' : '#3a448a', lHint: `Allowed here: ${L.allowed.join(' · ')}`,
+    };
+
+    // Reference
+    const R = G.reference.find((r) => r.key === st.refSel);
+    const newIds = new Set(Object.keys(R.after.commits).filter((id) => !R.before.commits[id]));
+    const chEdges = new Set(); newIds.forEach((id) => R.after.commits[id].parents.forEach((p2) => chEdges.add(id + '>' + p2)));
+    const changes = [];
+    newIds.forEach((id) => changes.push(`+ commit ${id}`));
+    Object.keys(R.after.branches).forEach((b) => { if (!(b in R.before.branches)) changes.push(`+ branch ${b}`); else if (R.before.branches[b] !== R.after.branches[b]) changes.push(`${b} → ${R.after.branches[b]}`); });
+    const hb = R.before.head, ha = R.after.head;
+    if (hb.detached !== ha.detached || hb.ref !== ha.ref || hb.commit !== ha.commit) changes.push(ha.detached ? `HEAD detached @ ${ha.commit}` : `HEAD → ${ha.ref}`);
+    const reference = {
+      refItems: G.reference.map((r) => ({ key: r.key, description: r.description, current: r.key === st.refSel ? 'true' : undefined,
+        bg: r.key === st.refSel ? '#e9ecf8' : 'transparent', shadow: r.key === st.refSel ? 'inset 3px 0 0 #ed1c24' : 'none', color: r.key === st.refSel ? '#c9151c' : '#1f2937',
+        onClick: () => this.setState({ refSel: r.key, copied: false }) })),
+      refKey: R.key, refDesc: R.description, refSyntax: R.syntax, refEffect: R.effect, refGotcha: R.gotcha,
+      refCopyLabel: st.copied ? '✓ Copied' : 'Copy',
+      refCopy: () => { const done = () => { this.setState({ copied: true }); setTimeout(() => this.setState({ copied: false }), 1500); }; (navigator.clipboard ? navigator.clipboard.writeText(R.syntax) : Promise.reject()).then(done, done); },
+      refBefore: this.graph(R.before, { scale: 1.2, label: 'Before' }), refAfter: this.graph(R.after, { scale: 1.2, changed: newIds, changedEdges: chEdges, parentLabels: true, label: 'After' }), refChanges: changes,
+    };
+
+    // Verification
+    const DIV = [
+      { id: 'd1', commands: 'git commit --allow-empty -m C2', expected: '[main (root-commit) 9a9d5a8] C2', actual: '[main (root-commit) c1] C2' },
+      { id: 'd2', commands: 'git commit --allow-empty -m C2 → git commit --allow-empty -m C3', expected: '[main 0441bcc] C3', actual: '[main c2] C3' },
+      { id: 'd3', commands: 'git commit --allow-empty -m C2 → git checkout c1', expected: "Note: switching to '9a9d5a8a…'. (+14 more lines)", actual: "Note: switching to 'c1'. You are in 'detached HEAD' state." },
+    ];
+    const rows = st.divFilter === 'hard' ? [] : DIV;
+    const verification = {
+      divOpts: this.seg([['all', 'All 19,806'], ['hard', 'Hard 0'], ['soft', 'Soft 19,806']], st.divFilter, (v) => this.setState({ divFilter: v })),
+      divRows: rows, divEmpty: st.divFilter === 'hard', divFooter: st.divFilter === 'hard' ? 'Showing 0 of 0' : 'Showing 1–3 of 19,806 · prototype sample',
+      perfOpts: this.seg([['chart', 'Chart'], ['table', 'Table']], st.perf, (v) => this.setState({ perf: v })), perfChart: st.perf === 'chart', perfTable: st.perf === 'table',
+      shaLabel: st.shaCopied ? '✓ Copied' : 'Copy full SHA',
+      copySha: () => { const done = () => { this.setState({ shaCopied: true }); setTimeout(() => this.setState({ shaCopied: false }), 1500); }; (navigator.clipboard ? navigator.clipboard.writeText('4448efb8aaecea310266c3ab002b6928362db466') : Promise.reject()).then(done, done); },
+    };
+    return { ...base, ...practice, ...levels, ...reference, ...verification };
+  }
+}
+</script>
+
+
+</body></html>
