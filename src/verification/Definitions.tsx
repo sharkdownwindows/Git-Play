@@ -3,7 +3,7 @@ export function Definitions() {
     <section className="verification-definitions" aria-label="Verification definitions">
       <article>
         <h2>Differential test</h2>
-        <p>Each case runs the same command sequence in GitScope and in real git inside a temp folder, then compares the results.</p>
+        <p>Each case runs the same command sequence in GitPlay and in real git inside a temp folder, then compares the results.</p>
       </article>
       <article>
         <h2><span className="verification-dot verification-dot--hard" aria-hidden="true" />Hard divergence</h2>
