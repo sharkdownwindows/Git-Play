@@ -83,7 +83,7 @@ The engine models graph and reference semantics, not file changes. Consequently,
 
 ### 4.1 Differential testing
 
-The harness executes the same abstract command sequence against GitScope and a temporary real Git repository. Real Git commits use `--allow-empty`; locale and user configuration are isolated. Since Git hashes cannot be compared directly, both repositories are normalized by creation order, parent structure, branches and attached/detached `HEAD`.
+The harness executes the same abstract command sequence against GitPlay and a temporary real Git repository. Real Git commits use `--allow-empty`; locale and user configuration are isolated. Since Git hashes cannot be compared directly, both repositories are normalized by creation order, parent structure, branches and attached/detached `HEAD`.
 
 The gate distinguishes:
 
@@ -138,61 +138,3 @@ Browser measurements are kept separate from pure layout:
 
 The first published SVG p95 above the project's 100 ms saturation threshold is at 1,000 commits. The report has no SVG point at 100,000 commits, so no value is inferred for it. Animation p95 is above the strict 16.7 ms target; [issue #47](https://github.com/sharkdownwindows/GitPlay/issues/47) remains open for production profiling. These large synthetic graphs locate implementation limits; normal educational levels are much smaller.
 
-## 5. User evaluation
-
-The repository contains a 30-minute protocol, paired six-question quizzes, three task groups spanning levels 01–08, an observation template, a raw CSV schema and a predeclared descriptive analysis plan.
-
-No participant data is present:
-
-| Item | Current result |
-|---|---:|
-| Participant rows | 0 |
-| Complete pre/post pairs | 0 |
-| Task completion rate | N/A |
-| Detached-HEAD completion | N/A |
-| Fast-forward/merge completion | N/A |
-| Pre/post change | N/A |
-| Usability themes | N/A |
-
-`N/A` is used because there is no denominator. Reporting `0%` would falsely imply that people attempted the tasks and failed. No conclusion about learning effectiveness or usability is supported by the current dataset.
-
-## 6. Documented bug fixes and stability work
-
-| Change | Root problem and correction | Evidence |
-|---|---|---|
-| Core parity on unborn branches and merge | `switch -c` / `checkout -b` initially rejected valid creation in an empty repository; merging the current/already-contained branch was treated as an error. The engine now preserves the unborn-branch behavior and returns successful “Already up to date.” results. | [PR #38](https://github.com/sharkdownwindows/GitPlay/pull/38), commit [`eed21b9`](https://github.com/sharkdownwindows/GitPlay/commit/eed21b9b04aa234e792179488388c673bff6ebeb), focused command tests. |
-| Random differential false divergences | Repeated merge messages could collide during normalization, and very fast equivalent Git commits could reuse object data. Normalization now uses creation order and ordinals; the real-Git adapter sets deterministic timestamps; full-report gates were made explicit. | [PR #46](https://github.com/sharkdownwindows/GitPlay/pull/46), commit [`9580877`](https://github.com/sharkdownwindows/GitPlay/commit/958087706ecd630b6f1abb683da44c5ca34944e9), harness/report tests. |
-| Browser benchmark/report gate | Browser series validation, timeouts and chart/report handling were hardened so a full report requires matching measured series instead of accepting incomplete data. | [PR #48](https://github.com/sharkdownwindows/GitPlay/pull/48), commit [`df16c31`](https://github.com/sharkdownwindows/GitPlay/commit/df16c319b46e239a5c012c8a95d8fa4cacdbe02e). |
-| Chrome startup in CI | Headless Chrome startup lacked robust diagnostics and cleanup. The harness now validates the executable and DevTools port, bounds stderr, reports exits and cleans resources; CI includes a browser smoke job. | [PR #49](https://github.com/sharkdownwindows/GitPlay/pull/49), commit [`55357eb`](https://github.com/sharkdownwindows/GitPlay/commit/55357ebad57e07c0fcb1c79ca851638dca509975), lifecycle tests. |
-| Evaluation metadata | The initial collection contract did not require recruitment source or applied eligibility criteria, preventing later description of selection bias. Both fields were added to the CSV, protocol, observation template and schema test. | `EVAL-02` in [evaluation results](evaluation/RESULTS.md), commit [`658fb42`](https://github.com/sharkdownwindows/GitPlay/commit/658fb42874f742206f238025d807765a495d22d1). |
-
-The final divergence log explicitly records that no hard divergence in the published run has a verified fixing commit. The table above therefore distinguishes earlier parity/harness defects from the zero-hard-divergence result; it does not claim that the final run discovered those fixes.
-
-## 7. Limitations and remaining risks
-
-- **Model boundary:** no file contents, working-tree changes, staging, content conflicts, remotes, rebase, tags or unsupported flags.
-- **Output parity:** 19,806 soft warnings remain. State and error-class parity passed, but GitScope is not a byte-for-byte terminal clone.
-- **Evidence age:** the bundled verification report covers source SHA `741eba7…`; later UI/evaluation/documentation changes need their own matching report before claiming equivalent end-to-end evidence.
-- **Browser performance:** SVG p95 crosses 100 ms at 1,000 commits in the published run, and the animation result narrowly misses the strict target. Performance varies by browser and hardware.
-- **User evidence:** `n = 0`. The prepared evaluation cannot support a user-outcome claim until valid sessions are collected and entered.
-- **Local progress:** `localStorage` is browser/profile-specific and may be cleared by the user or browser.
-- **Offline semantics:** a built bundle can be served from a local HTTP process with the machine disconnected, and it has no runtime backend or external assets. There is no service worker, so reopening a remote deployment after its server disappears is not guaranteed.
-- **Static report:** Verification displays a committed artifact, not a live test. Its timestamp and SHA must be checked before using it as evidence for a newer build.
-
-## 8. Traceability
-
-| Evidence | Trace |
-|---|---|
-| Published nightly run | [GitHub Actions run 36834371216](https://github.com/sharkdownwindows/GitPlay/actions/runs/36834371216), completed successfully on 2026-10-01. The `verification` artifact contains the measured report, divergence log and matching browser raw output. |
-| Measured source | [`741eba72faed313cf0fc6e2fb4c60e8c35268dfd`](https://github.com/sharkdownwindows/GitPlay/commit/741eba72faed313cf0fc6e2fb4c60e8c35268dfd). |
-| Generated report commit | [`84fea08d7a4b845a995a60006f4dbf1b2aea8769`](https://github.com/sharkdownwindows/GitPlay/commit/84fea08d7a4b845a995a60006f4dbf1b2aea8769), authored by the GitHub Actions bot after the gates passed. |
-| Report used for all numeric claims | [`public/verification.json`](../public/verification.json). |
-| Differential examples and counts | [`docs/divergences.md`](divergences.md). |
-| Benchmark method and raw-data contract | [`docs/render-benchmark.md`](render-benchmark.md); matching raw browser samples are in the CI artifact above. |
-| Raw user-evaluation data | [`docs/evaluation/raw-results.csv`](evaluation/raw-results.csv), currently header-only with 0 participant rows. |
-| Evaluation analysis/status | [`docs/evaluation/RESULTS.md`](evaluation/RESULTS.md) and [`clean-results.csv`](evaluation/clean-results.csv). |
-| Product requirements and contracts | [`docs/PRD.md`](PRD.md), [`docs/TECHNICAL_OVERVIEW.md`](TECHNICAL_OVERVIEW.md), `src/core/types.ts`, `src/verification/report.ts` and `src/progress/types.ts`. |
-
-## 9. Conclusion
-
-GitScope delivers the intended narrow simulator and makes its main correctness claim auditable: for the cited CI run and source SHA, the five-command state model passed all 6,160 published valid differential cases with no hard divergence. The benchmark identifies clear scaling limits rather than hiding them. The unresolved gap is user evaluation: the instrumentation exists, but the repository contains no participant observations, so no learning or usability outcome is claimed.
