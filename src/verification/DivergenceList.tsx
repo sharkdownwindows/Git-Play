@@ -52,7 +52,7 @@ function DivergenceRow({ divergence }: { divergence: Divergence }) {
         <CollapsedText value={divergence.expected} />
       </div>
       <div>
-        <span className="divergence-label">GitScope</span>
+        <span className="divergence-label">GitPlay</span>
         <CollapsedText value={divergence.actual} />
       </div>
     </li>
