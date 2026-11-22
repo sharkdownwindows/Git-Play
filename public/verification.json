@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-21T09:39:56.596Z",
-  "commitSha": "0fe03990c25db2dfb0f8d39f17766194cae3bdfa",
+  "generatedAt": "2026-11-22T09:43:51.507Z",
+  "commitSha": "3c5f7c8a3d743f25e41caf0dc90f1804a67d9d7c",
   "gitVersion": "git version 2.43.0",
   "nodeVersion": "v24.22.3",
   "diffTest": {
@@ -12,7 +12,7 @@
     "exhaustiveDepth": 3,
     "randomCases": 5000,
     "seed": 42,
-    "durationMs": 982538.619273
+    "durationMs": 804733.302173
   },
   "coverage": {
     "commit": 5938,
@@ -27,26 +27,26 @@
       "points": [
         {
           "n": 100,
-          "medianMs": 0.18173399998340756,
-          "p95Ms": 0.21326099999714643,
+          "medianMs": 0.15323100006207824,
+          "p95Ms": 0.18213700002525002,
           "iterations": 7
         },
         {
           "n": 1000,
-          "medianMs": 0.9507319999393076,
-          "p95Ms": 1.3192169999238104,
+          "medianMs": 0.8907830000389367,
+          "p95Ms": 1.5435799999395385,
           "iterations": 7
         },
         {
           "n": 10000,
-          "medianMs": 12.14994699996896,
-          "p95Ms": 18.666214000084437,
+          "medianMs": 12.362461999990046,
+          "p95Ms": 18.055328999995254,
           "iterations": 7
         },
         {
           "n": 100000,
-          "medianMs": 167.52544400002807,
-          "p95Ms": 172.6994690001011,
+          "medianMs": 169.04452400002629,
+          "p95Ms": 179.32903100003023,
           "iterations": 7
         }
       ]
@@ -56,20 +56,20 @@
       "points": [
         {
           "n": 100,
-          "medianMs": 31.80000000000291,
-          "p95Ms": 32.60000000000582,
+          "medianMs": 32.30000000000291,
+          "p95Ms": 32.5,
           "iterations": 5
         },
         {
           "n": 1000,
-          "medianMs": 45.70000000001164,
-          "p95Ms": 48,
+          "medianMs": 45.80000000000291,
+          "p95Ms": 46.80000000000291,
           "iterations": 5
         },
         {
           "n": 10000,
-          "medianMs": 407.90000000000873,
-          "p95Ms": 538.9000000000087,
+          "medianMs": 346.1999999999971,
+          "p95Ms": 413.5,
           "iterations": 5
         }
       ]
