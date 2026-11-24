@@ -2,7 +2,7 @@
 
 ## Run metadata
 
-Commit SHA: 0ad0778943bab31a31b3d077d8a0e4fbe7f08361
+Commit SHA: 96c10622e4077cd7e0ade869881ab504f1f9bef8
 Git version: git version 2.43.0
 Seed: 42
 Exhaustive depth: 3
